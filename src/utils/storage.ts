@@ -1,4 +1,5 @@
 import { AUTH_CONFIG } from "@/constants";
+import type { User } from "@/types/user.types";
 import * as SecureStore from "expo-secure-store";
 
 /**
@@ -12,24 +13,23 @@ import * as SecureStore from "expo-secure-store";
  */
 
 /**
- * Storage keys used throughout the app
- */
-
-/**
  * Safely get item from SecureStore
  * @param {string} key - Storage key
- * @param {*} defaultValue - Default value if key doesn't exist
- * @returns {Promise<*>} Parsed value or default
+ * @param {T | null} defaultValue - Default value if key doesn't exist
+ * @returns {Promise<T | null>} Parsed value or default
  */
-export const getStorageItem = async (key: string, defaultValue: any = null) => {
+export const getStorageItem = async <T = unknown>(
+	key: string,
+	defaultValue: T | null = null,
+): Promise<T | null> => {
 	try {
 		const item = await SecureStore.getItemAsync(key);
 		if (item) {
 			try {
-				return JSON.parse(item);
+				return JSON.parse(item) as T;
 			} catch {
 				// If parsing fails, return the raw string
-				return item;
+				return item as unknown as T;
 			}
 		}
 		return defaultValue;
@@ -42,10 +42,10 @@ export const getStorageItem = async (key: string, defaultValue: any = null) => {
 /**
  * Safely set item in SecureStore
  * @param {string} key - Storage key
- * @param {*} value - Value to store (will be stringified)
+ * @param {unknown} value - Value to store (will be stringified)
  * @returns {Promise<boolean>} Success status
  */
-export const setStorageItem = async (key: string, value: any) => {
+export const setStorageItem = async (key: string, value: unknown) => {
 	try {
 		const stringValue =
 			typeof value === "string" ? value : JSON.stringify(value);
@@ -136,7 +136,7 @@ export const setAuthToken = async (token: string) => {
  * @returns {Promise<string | null>} Authentication token or null
  */
 export const getAuthToken = async (): Promise<string | null> => {
-	return getStorageItem(AUTH_CONFIG.ACCESS_TOKEN_STORAGE_KEY, null);
+	return getStorageItem<string>(AUTH_CONFIG.ACCESS_TOKEN_STORAGE_KEY, null);
 };
 
 /**
@@ -149,19 +149,19 @@ export const removeAuthToken = async () => {
 
 /**
  * Store user data securely
- * @param {object} userData - User data object
+ * @param {User} userData - User data object
  * @returns {Promise<boolean>} Success status
  */
-export const setUserData = async (userData: any) => {
+export const setUserData = async (userData: User) => {
 	return setStorageItem(AUTH_CONFIG.USER_STORAGE_KEY, userData);
 };
 
 /**
  * Get user data
- * @returns {Promise<object | null>} User data or null
+ * @returns {Promise<User | null>} User data or null
  */
-export const getUserData = async (): Promise<any> => {
-	return getStorageItem(AUTH_CONFIG.USER_STORAGE_KEY, null);
+export const getUserData = async (): Promise<User | null> => {
+	return getStorageItem<User>(AUTH_CONFIG.USER_STORAGE_KEY, null);
 };
 
 /**

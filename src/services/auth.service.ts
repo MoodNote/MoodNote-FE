@@ -1,6 +1,6 @@
 // Authentication API calls (FR-01 to FR-04)
 
-import api from "@/lib/api";
+import { apiService as api } from "@/lib/api";
 import type { ApiResponse } from "@/types/api.types";
 import type {
 	AuthTokens,

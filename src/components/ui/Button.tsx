@@ -4,9 +4,9 @@
 
 import {
 	ActivityIndicator,
+	Pressable,
 	StyleSheet,
 	Text,
-	TouchableOpacity,
 } from "react-native";
 
 interface ButtonProps {
@@ -25,7 +25,7 @@ export function Button({
 	disabled,
 }: ButtonProps) {
 	return (
-		<TouchableOpacity
+		<Pressable
 			style={[
 				styles.base,
 				styles[variant],
@@ -38,7 +38,7 @@ export function Button({
 			) : (
 				<Text style={styles.text}>{title}</Text>
 			)}
-		</TouchableOpacity>
+		</Pressable>
 	);
 }
 

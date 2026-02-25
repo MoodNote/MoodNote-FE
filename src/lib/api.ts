@@ -11,15 +11,23 @@ import {
 	shouldLogout,
 } from "@/utils";
 
-import axios, { type AxiosInstance } from "axios";
+import axios, {
+	type AxiosInstance,
+	type AxiosRequestConfig,
+	type AxiosResponse,
+	type AxiosError,
+	type InternalAxiosRequestConfig,
+} from "axios";
+
+type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 
 class ApiService {
 	private baseUrl: string;
 	private api: AxiosInstance;
 	private isRefreshing: boolean = false;
 	private failedQueue: Array<{
-		resolve: (value?: any) => void;
-		reject: (reason?: any) => void;
+		resolve: (value: string) => void;
+		reject: (reason: unknown) => void;
 	}> = [];
 
 	constructor(customBaseUrl: string | null = null) {
@@ -59,7 +67,7 @@ class ApiService {
 	 */
 	_setupRequestInterceptor() {
 		this.api.interceptors.request.use(
-			async (config: any) => {
+			async (config: InternalAxiosRequestConfig) => {
 				// Don't send token for login/register/refresh endpoints
 				if (
 					!this._isLoginEndpoint(config.url) &&
@@ -72,7 +80,7 @@ class ApiService {
 				}
 				return config;
 			},
-			(error: any) => {
+			(error: AxiosError) => {
 				const parsedError = parseError(error);
 				logError(parsedError, { context: "api.request" });
 				return Promise.reject(parsedError);
@@ -86,9 +94,9 @@ class ApiService {
 	 */
 	_setupResponseInterceptor() {
 		this.api.interceptors.response.use(
-			(response: any) => response,
-			async (error: any) => {
-				const originalRequest = error.config;
+			(response: AxiosResponse) => response,
+			async (error: AxiosError) => {
+				const originalRequest = error.config as RetryableRequestConfig;
 				const parsedError = parseError(error);
 
 				// Don't trigger logout for login endpoint errors
@@ -127,7 +135,7 @@ class ApiService {
 
 					try {
 						const refreshResponse =
-							await this._performTokenRefresh(refreshToken);
+							await this._performTokenRefresh(refreshToken as string);
 
 						// Check response format: { code: 1000, data: { access_token, refresh_token } }
 						if (
@@ -193,12 +201,12 @@ class ApiService {
 	 * Process queued requests after token refresh
 	 * @private
 	 */
-	_processQueue(error: any, token: string | null = null) {
+	_processQueue(error: unknown, token: string | null = null) {
 		this.failedQueue.forEach((prom) => {
 			if (error) {
 				prom.reject(error);
 			} else {
-				prom.resolve(token);
+				prom.resolve(token ?? "");
 			}
 		});
 
@@ -208,20 +216,20 @@ class ApiService {
 	/**
 	 * Check if URL is login endpoint
 	 * @private
-	 * @param {string} url - Request URL
+	 * @param {string | undefined} url - Request URL
 	 * @returns {boolean} Whether URL is login endpoint
 	 */
-	_isLoginEndpoint(url: string) {
+	_isLoginEndpoint(url: string | undefined) {
 		return url?.includes("login") || url?.includes("register");
 	}
 
 	/**
 	 * Check if URL is refresh endpoint
 	 * @private
-	 * @param {string} url - Request URL
+	 * @param {string | undefined} url - Request URL
 	 * @returns {boolean} Whether URL is refresh endpoint
 	 */
-	_isRefreshEndpoint(url: string) {
+	_isRefreshEndpoint(url: string | undefined) {
 		return url?.includes("refresh") || url?.includes("/refresh");
 	}
 
@@ -231,7 +239,7 @@ class ApiService {
 	 * @param {string} refreshToken - Refresh token
 	 * @returns {Promise<Object>} Refresh response
 	 */
-	async _performTokenRefresh(refreshToken: any) {
+	async _performTokenRefresh(refreshToken: string) {
 		return axios.post(`${this.baseUrl}/auth/refresh`, {
 			refreshToken,
 		});
@@ -257,30 +265,28 @@ class ApiService {
 	}
 
 	// Proxy methods to axios instance
-	get<T = any>(url: any, config?: any) {
+	get<T = unknown>(url: string, config?: AxiosRequestConfig) {
 		return this.api.get<T>(url, config);
 	}
 
-	post<T = any>(url: any, data?: any, config?: any) {
+	post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig) {
 		return this.api.post<T>(url, data, config);
 	}
 
-	put<T = any>(url: any, data?: any, config?: any) {
+	put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig) {
 		return this.api.put<T>(url, data, config);
 	}
 
-	patch<T = any>(url: any, data?: any, config?: any) {
+	patch<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig) {
 		return this.api.patch<T>(url, data, config);
 	}
 
-	delete<T = any>(url: any, config?: any) {
+	delete<T = unknown>(url: string, config?: AxiosRequestConfig) {
 		return this.api.delete<T>(url, config);
 	}
 }
 
-const apiService = new ApiService();
+export const apiService = new ApiService();
 
 // * Use this for custom instances
 export { ApiService };
-
-export default apiService;

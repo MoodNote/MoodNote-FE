@@ -64,3 +64,5 @@ export default {
 	ERROR_CODES,
 	ERROR_MESSAGES,
 };
+
+export * from "./Colors";

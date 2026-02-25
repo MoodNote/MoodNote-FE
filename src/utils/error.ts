@@ -1,4 +1,6 @@
-import { ERROR_CODES, ERROR_MESSAGES } from "../constants";
+import { isAxiosError } from "axios";
+import { ERROR_CODES, ERROR_MESSAGES } from "@/constants";
+
 export class ApiError extends Error {
 	status: number;
 	code: string;
@@ -15,12 +17,12 @@ export class ApiError extends Error {
 }
 
 /**
- * @param {Object} error - Axios error object or response
+ * @param {unknown} error - Axios error object or response
  * @returns {ApiError} Parsed error
  */
-export const parseError = (error: any) => {
-	// Network error (no response)
-	if (!error.response) {
+export const parseError = (error: unknown): ApiError => {
+	// Network error (no response or not an Axios error)
+	if (!isAxiosError(error) || !error.response) {
 		return new ApiError(
 			ERROR_MESSAGES.NETWORK_ERROR,
 			0,
@@ -63,28 +65,36 @@ export const parseError = (error: any) => {
 	return new ApiError(finalMessage, status, validCode);
 };
 
+type WrappedResponse = {
+	data?: {
+		status?: string;
+		code?: number;
+		data?: unknown;
+		pagination?: unknown;
+		message?: string;
+	};
+};
+
 /**
  * Simple service error handler - wraps async functions with error handling
  * @param {Function} asyncFn - Async function to wrap
  * @returns {Function} Wrapped function that returns standardized response
  */
-export const withErrorHandling = <TArgs extends any[], TReturn>(
+export const withErrorHandling = <TArgs extends unknown[], TReturn>(
 	asyncFn: (...args: TArgs) => Promise<TReturn>,
 ) => {
 	return async (...args: TArgs) => {
 		try {
 			const response = await asyncFn(...args);
+			const r = response as WrappedResponse;
 
 			// If response is successful, return it
-			if (
-				(response as any).data?.status === "success" ||
-				(response as any).data?.code === 200
-			) {
+			if (r.data?.status === "success" || r.data?.code === 200) {
 				return {
 					success: true,
-					data: (response as any).data.data,
-					pagination: (response as any).data.pagination,
-					message: (response as any).data.message,
+					data: r.data?.data,
+					pagination: r.data?.pagination,
+					message: r.data?.message,
 				};
 			}
 
@@ -94,7 +104,7 @@ export const withErrorHandling = <TArgs extends any[], TReturn>(
 				error: error.message,
 				code: error.code,
 			};
-		} catch (error: any) {
+		} catch (error: unknown) {
 			const parsedError = parseError(error);
 
 			return {
@@ -108,14 +118,14 @@ export const withErrorHandling = <TArgs extends any[], TReturn>(
 
 /**
  * Log error with context (simplified)
- * @param {Error} error - Error to log
- * @param {Object} context - Additional context
+ * @param {unknown} error - Error to log
+ * @param {Record<string, unknown>} context - Additional context
  */
-export const logError = (error: any, context = {}) => {
+export const logError = (error: unknown, context: Record<string, unknown> = {}) => {
 	console.error("Application Error:", {
-		message: error.message,
-		code: error.code,
-		status: error.status,
+		message: error instanceof Error ? error.message : String(error),
+		code: error instanceof ApiError ? error.code : undefined,
+		status: error instanceof ApiError ? error.status : undefined,
 		timestamp: new Date().toISOString(),
 		...context,
 	});
@@ -123,10 +133,11 @@ export const logError = (error: any, context = {}) => {
 
 /**
  * Check if error should trigger logout (401/403)
- * @param {ApiError} error - Parsed API error
+ * @param {unknown} error - Parsed API error
  * @returns {boolean} Whether error should trigger logout
  */
-export const shouldLogout = (error: any) => {
+export const shouldLogout = (error: unknown): boolean => {
+	if (!(error instanceof ApiError)) return false;
 	return (
 		error.status === 401 ||
 		error.status === 403 ||

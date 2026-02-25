@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 // Placeholder home screen — shown after successful login
 // TODO: Replace with full app once other features are implemented
@@ -8,9 +8,9 @@ export default function HomeScreen() {
 		<View style={styles.container}>
 			<Text style={styles.title}>MoodNote</Text>
 			<Text style={styles.subtitle}></Text>
-			<TouchableOpacity style={styles.btn}>
+			<Pressable style={styles.btn}>
 				<Text style={styles.btnText}>Đăng xuất</Text>
-			</TouchableOpacity>
+			</Pressable>
 		</View>
 	);
 }

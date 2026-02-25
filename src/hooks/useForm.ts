@@ -1,12 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useState } from "react";
 import {
-	FieldValues,
-	Path,
-	SubmitErrorHandler,
-	SubmitHandler,
-	UseFormProps,
-	UseFormReturn,
+	type Resolver,
+	type FieldValues,
+	type Path,
+	type SubmitErrorHandler,
+	type SubmitHandler,
+	type UseFormProps,
+	type UseFormReturn,
 	useForm as useRHForm,
 } from "react-hook-form";
 import { ZodType } from "zod";
@@ -67,7 +68,8 @@ export function useForm<TValues extends FieldValues>({
 
 	const methods = useRHForm<TValues>({
 		...rhfOptions,
-		resolver: zodResolver(schema as any),
+		// Zod v4 + @hookform/resolvers v5 type incompatibility — cast resolver to correct output type
+		resolver: zodResolver(schema as unknown as Parameters<typeof zodResolver>[0]) as Resolver<TValues>,
 		mode: rhfOptions.mode ?? "onTouched",
 	});
 
@@ -80,10 +82,11 @@ export function useForm<TValues extends FieldValues>({
 			setIsSubmitting(true);
 			try {
 				await onSubmit(values);
-			} catch (err: any) {
+			} catch (err: unknown) {
 				const message =
-					err?.message ??
-					"An unexpected error occurred. Please try again.";
+					err instanceof Error
+						? err.message
+						: "An unexpected error occurred. Please try again.";
 				setServerError(message);
 			} finally {
 				setIsSubmitting(false);
@@ -112,7 +115,7 @@ export function useForm<TValues extends FieldValues>({
 				...rest,
 				value: (watch(name) as string) ?? "",
 				onChangeText: (text: string) =>
-					setValue(name, text as any, {
+					setValue(name, text as TValues[Path<TValues>], {
 						shouldValidate: !!(
 							formState.touchedFields as Record<string, unknown>
 						)[name],
