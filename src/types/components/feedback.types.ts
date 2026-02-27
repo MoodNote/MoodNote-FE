@@ -47,3 +47,20 @@ export interface EmptyStateProps {
 		onPress: () => void;
 	};
 }
+
+export interface WavyLoaderProps {
+	/** Number of bars. Default: 5 */
+	barCount?: number;
+	/** Width of each bar in dp. Default: 4 */
+	barWidth?: number;
+	/** Max height of each bar in dp. Default: 40 */
+	barHeight?: number;
+	/** Gap between bars in dp. Default: 5 */
+	gap?: number;
+	/** Solid bar color. If provided, overrides gradient. */
+	color?: string;
+	/** Custom vertical gradient [top, bottom]. Overrides default theme gradient. */
+	gradientColors?: readonly [string, string];
+	/** Border radius of each bar. Default: barWidth / 2 (pill shape) */
+	borderRadius?: number;
+}

@@ -31,8 +31,9 @@ import {
 	ToggleSwitch,
 	ToastProvider,
 	useToast,
+	WavyLoader,
 } from "@/components/ui";
-import { useThemeColors } from "@/hooks";
+import { useThemeColors, useThemeContext } from "@/hooks";
 import type { ThemeColors } from "@/theme";
 
 // ─── Helper: Section ───────────────────────────────────────────────────────────
@@ -74,6 +75,7 @@ function Row({ children, gap = 8 }: { children: ReactNode; gap?: number }) {
 function ReviewContent() {
 	const colors = useThemeColors();
 	const styles = useMemo(() => createStyles(colors), [colors]);
+	const { colorScheme, toggleTheme } = useThemeContext();
 	const { show } = useToast();
 
 	// Interactive states
@@ -96,8 +98,23 @@ function ReviewContent() {
 
 				{/* Page header */}
 				<View style={styles.pageHeader}>
-					<Text style={styles.pageTitle}>UI Components</Text>
-					<Text style={styles.pageSubtitle}>MoodNote design system</Text>
+					<View>
+						<Text style={styles.pageTitle}>UI Components</Text>
+						<Text style={styles.pageSubtitle}>MoodNote design system</Text>
+					</View>
+					<IconButton
+						icon={
+							<Ionicons
+								name={colorScheme === "dark" ? "sunny-outline" : "moon-outline"}
+								size={22}
+								color={colors.iconDefault}
+							/>
+						}
+						onPress={toggleTheme}
+						accessibilityLabel={colorScheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+						variant="filled"
+						size="md"
+					/>
 				</View>
 
 				{/* ── BUTTONS ───────────────────────────────────────── */}
@@ -362,6 +379,24 @@ function ReviewContent() {
 					</Block>
 				</Section>
 
+				<Section title="WavyLoader">
+					<Block label="mặc định — gradient (brand.secondary → brand.primary)">
+						<WavyLoader />
+					</Block>
+					<Block label="7 bars">
+						<WavyLoader barCount={7} />
+					</Block>
+					<Block label="gradient tùy chỉnh (enjoyment → brand.primary)">
+						<WavyLoader gradientColors={[colors.mood.enjoyment, colors.brand.primary]} />
+					</Block>
+					<Block label="solid color (color prop)">
+						<WavyLoader color={colors.mood.enjoyment} />
+					</Block>
+					<Block label="bars cao hơn (barHeight=60)">
+						<WavyLoader barHeight={60} barWidth={6} gap={6} />
+					</Block>
+				</Section>
+
 				<Section title="SkeletonLoader">
 					<Block label="text lines">
 						<View style={styles.skeletonGroup}>
@@ -493,7 +528,7 @@ function createStyles(colors: ThemeColors) {
 		content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 40 },
 
 		// Page header
-		pageHeader: { marginBottom: 28 },
+		pageHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 28 },
 		pageTitle: { fontSize: 28, fontWeight: "800", color: colors.text.primary, marginBottom: 4 },
 		pageSubtitle: { fontSize: 14, color: colors.text.muted },
 
