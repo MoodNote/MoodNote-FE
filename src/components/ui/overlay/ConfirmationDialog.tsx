@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, LINE_HEIGHT, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import type { ConfirmationDialogProps } from "@/types";
 import { Button } from "../buttons/Button";
@@ -50,22 +51,22 @@ export function ConfirmationDialog({
 
 function createStyles(colors: ThemeColors) {
 	return StyleSheet.create({
-		body: { paddingTop: 8, paddingBottom: 8 },
+		body: { paddingTop: SPACING[8], paddingBottom: SPACING[8] },
 		title: {
-			fontSize: 18,
+			fontSize: FONT_SIZE[18],
 			fontWeight: "700",
 			color: colors.text.primary,
-			marginBottom: 10,
+			marginBottom: SPACING[10],
 		},
 		message: {
-			fontSize: 15,
+			fontSize: FONT_SIZE[15],
 			color: colors.text.secondary,
-			lineHeight: 22,
-			marginBottom: 24,
+			lineHeight: LINE_HEIGHT.relaxed,
+			marginBottom: SPACING[24],
 		},
 		actions: {
 			flexDirection: "row",
-			gap: 12,
+			gap: SPACING[12],
 		},
 		actionButton: { flex: 1 },
 	});

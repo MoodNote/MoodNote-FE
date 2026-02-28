@@ -2,8 +2,10 @@ import { useMemo } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, RADIUS, SIZE, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import type { ButtonProps } from "@/types";
+import { vs } from "@/utils";
 
 export function Button({
 	title,
@@ -56,7 +58,7 @@ export function Button({
 function createStyles(colors: ThemeColors) {
 	return StyleSheet.create({
 		base: {
-			borderRadius: 8,
+			borderRadius: RADIUS.sm,
 			alignItems: "center",
 			justifyContent: "center",
 		},
@@ -71,22 +73,22 @@ function createStyles(colors: ThemeColors) {
 		ghost: { backgroundColor: "transparent" },
 		danger: { backgroundColor: colors.status.error },
 		// Sizes
-		sm: { paddingVertical: 6, paddingHorizontal: 14, minHeight: 32 },
-		md: { paddingVertical: 12, paddingHorizontal: 20, minHeight: 44 },
-		lg: { paddingVertical: 15, paddingHorizontal: 28, minHeight: 52 },
+		sm: { paddingVertical: SPACING[6], paddingHorizontal: SPACING[14], minHeight: SIZE.xs },
+		md: { paddingVertical: SPACING[12], paddingHorizontal: SPACING[20], minHeight: SIZE.md },
+		lg: { paddingVertical: vs(15), paddingHorizontal: SPACING[28], minHeight: SIZE.xl },
 		// State
 		fullWidth: { alignSelf: "stretch" },
 		disabled: { opacity: 0.5 },
 		// Row layout for icon + text
 		row: { flexDirection: "row", alignItems: "center" },
-		iconLeft: { marginRight: 6 },
-		iconRight: { marginLeft: 6 },
+		iconLeft: { marginRight: SPACING[6] },
+		iconRight: { marginLeft: SPACING[6] },
 		// Text colors
 		textInverse: { fontWeight: "600", color: colors.text.inverse },
 		textBrand: { fontWeight: "600", color: colors.brand.primary },
 		// Text sizes
-		textSm: { fontSize: 13 },
-		textMd: { fontSize: 15 },
-		textLg: { fontSize: 17 },
+		textSm: { fontSize: FONT_SIZE[13] },
+		textMd: { fontSize: FONT_SIZE[15] },
+		textLg: { fontSize: FONT_SIZE[17] },
 	});
 }

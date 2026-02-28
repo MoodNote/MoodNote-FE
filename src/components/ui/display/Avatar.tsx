@@ -2,11 +2,13 @@ import { useCallback, useMemo, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, SIZE } from "@/theme";
 import type { ThemeColors } from "@/theme";
+import { s } from "@/utils";
 import type { AvatarProps } from "@/types";
 
-const SIZE_MAP = { sm: 32, md: 44, lg: 64 } as const;
-const FONT_MAP = { sm: 12, md: 16, lg: 22 } as const;
+const SIZE_MAP = { sm: SIZE.xs, md: SIZE.md, lg: SIZE["2xl"] } as const;
+const FONT_MAP = { sm: FONT_SIZE[12], md: s(16), lg: FONT_SIZE[22] } as const;
 
 export function Avatar({ uri, name, size = "md", onPress }: AvatarProps) {
 	const colors = useThemeColors();

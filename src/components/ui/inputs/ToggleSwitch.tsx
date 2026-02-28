@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Platform, StyleSheet, Switch, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import type { ToggleSwitchProps } from "@/types";
 
@@ -54,16 +55,16 @@ function createStyles(colors: ThemeColors) {
 			alignItems: "center",
 			justifyContent: "space-between",
 		},
-		labelGroup: { flex: 1, marginRight: 12 },
+		labelGroup: { flex: 1, marginRight: SPACING[12] },
 		label: {
-			fontSize: 15,
+			fontSize: FONT_SIZE[15],
 			fontWeight: "500",
 			color: colors.text.primary,
 		},
 		sublabel: {
-			fontSize: 13,
+			fontSize: FONT_SIZE[13],
 			color: colors.text.muted,
-			marginTop: 2,
+			marginTop: SPACING[2],
 		},
 		disabled: { opacity: 0.5 },
 	});

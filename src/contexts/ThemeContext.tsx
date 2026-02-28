@@ -2,7 +2,6 @@ import { createContext, useCallback, useEffect, useMemo, useState } from "react"
 import { useColorScheme } from "react-native";
 
 import { THEME_STORAGE_KEY } from "@/constants";
-import { DARK_THEME } from "@/theme/dark";
 import { LIGHT_THEME } from "@/theme/light";
 import type { ColorScheme, ThemeColors } from "@/theme/tokens";
 import { getStorageItem, setStorageItem } from "@/utils/storage";
@@ -41,7 +40,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 	useEffect(() => {
 		getStorageItem<ColorScheme>(THEME_STORAGE_KEY).then((saved) => {
 			if (saved === "light" || saved === "dark") {
-				setColorScheme(saved);
+				setColorScheme("light");
 			}
 		});
 	}, []);
@@ -58,7 +57,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 	const value = useMemo(
 		() => ({
 			colorScheme,
-			colors: colorScheme === "dark" ? DARK_THEME : LIGHT_THEME,
+			// colors: colorScheme === "dark" ? DARK_THEME : LIGHT_THEME,
+			colors: LIGHT_THEME,
 			setTheme,
 			toggleTheme,
 		}),

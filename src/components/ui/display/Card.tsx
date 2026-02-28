@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { RADIUS, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import type { CardProps } from "@/types";
 
@@ -13,7 +14,7 @@ export function Card({
 	...rest
 }: CardProps) {
 	const colors = useThemeColors();
-	const resolvedPadding = padding === false ? 0 : (padding ?? 16);
+	const resolvedPadding = padding === false ? 0 : (padding ?? SPACING[16]);
 	const styles = useMemo(
 		() => createStyles(colors, resolvedPadding),
 		[colors, resolvedPadding],
@@ -29,7 +30,7 @@ export function Card({
 function createStyles(colors: ThemeColors, padding: number) {
 	return StyleSheet.create({
 		base: {
-			borderRadius: 12,
+			borderRadius: RADIUS.lg,
 			padding,
 			backgroundColor: colors.background.card,
 		},

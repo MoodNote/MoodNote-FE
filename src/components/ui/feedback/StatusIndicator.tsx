@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
+import { s } from "@/utils";
 import type { StatusIndicatorProps, StatusIndicatorStatus } from "@/types";
 
 const LABEL_MAP: Record<StatusIndicatorStatus, string> = {
@@ -75,14 +77,14 @@ function createStyles(colors: ThemeColors) {
 	return StyleSheet.create({
 		row: { flexDirection: "row", alignItems: "center" },
 		dot: {
-			width: 8,
-			height: 8,
-			borderRadius: 4,
+			width: s(8),
+			height: s(8),
+			borderRadius: s(4),
 		},
 		label: {
-			fontSize: 12,
+			fontSize: FONT_SIZE[12],
 			color: colors.text.muted,
-			marginLeft: 6,
+			marginLeft: SPACING[6],
 		},
 	});
 }

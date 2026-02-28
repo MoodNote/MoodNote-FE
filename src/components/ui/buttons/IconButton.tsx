@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Pressable, StyleSheet } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { RADIUS, SIZE } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import type { IconButtonProps } from "@/types";
 
@@ -35,12 +36,12 @@ function createStyles(colors: ThemeColors) {
 		base: {
 			alignItems: "center",
 			justifyContent: "center",
-			borderRadius: 999,
+			borderRadius: RADIUS.full,
 		},
 		// Sizes
-		sm: { width: 32, height: 32 },
-		md: { width: 40, height: 40 },
-		lg: { width: 48, height: 48 },
+		sm: { width: SIZE.xs, height: SIZE.xs },
+		md: { width: SIZE.sm, height: SIZE.sm },
+		lg: { width: SIZE.lg, height: SIZE.lg },
 		// Variants
 		ghost: { backgroundColor: "transparent" },
 		filled: { backgroundColor: colors.background.elevated },

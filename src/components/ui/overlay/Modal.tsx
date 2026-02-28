@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, RADIUS, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import type { ModalProps } from "@/types";
 import { IconButton } from "../buttons/IconButton";
@@ -71,22 +72,22 @@ function createStyles(colors: ThemeColors) {
 		},
 		container: {
 			backgroundColor: colors.background.elevated,
-			borderTopLeftRadius: 20,
-			borderTopRightRadius: 20,
-			paddingBottom: 32,
-			paddingHorizontal: 20,
-			paddingTop: 8,
+			borderTopLeftRadius: RADIUS.xl,
+			borderTopRightRadius: RADIUS.xl,
+			paddingBottom: SPACING[32],
+			paddingHorizontal: SPACING[20],
+			paddingTop: SPACING[8],
 			maxHeight: "90%",
 		},
 		header: {
 			flexDirection: "row",
 			alignItems: "center",
 			justifyContent: "space-between",
-			paddingVertical: 12,
-			marginBottom: 4,
+			paddingVertical: SPACING[12],
+			marginBottom: SPACING[4],
 		},
 		title: {
-			fontSize: 17,
+			fontSize: FONT_SIZE[17],
 			fontWeight: "600",
 			color: colors.text.primary,
 		},

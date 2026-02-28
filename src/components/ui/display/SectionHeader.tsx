@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import type { SectionHeaderProps } from "@/types";
 
@@ -31,15 +32,15 @@ function createStyles(colors: ThemeColors) {
 			flexDirection: "row",
 			alignItems: "center",
 			justifyContent: "space-between",
-			marginBottom: 12,
+			marginBottom: SPACING[12],
 		},
 		title: {
-			fontSize: 17,
+			fontSize: FONT_SIZE[17],
 			fontWeight: "600",
 			color: colors.text.primary,
 		},
 		action: {
-			fontSize: 14,
+			fontSize: FONT_SIZE[14],
 			color: colors.text.link,
 		},
 	});

@@ -2,10 +2,12 @@ import { Button } from "@/components/ui";
 import { ScreenWrapper } from "@/components/layout";
 import { ROUTES } from "@/constants";
 import { useThemeColors } from "@/hooks";
+import { SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
+import { s } from "@/utils";
 import { router } from "expo-router";
 import { useCallback, useMemo } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn, FadeInDown, FadeInUp, ZoomIn } from "react-native-reanimated";
 
 export default function WelcomeScreen() {
@@ -53,14 +55,14 @@ export default function WelcomeScreen() {
 						onPress={handleRegister}
 						accessibilityLabel="Tạo tài khoản mới"
 					/>
-					<Pressable
+					<Button
+						title="Đăng nhập"
+						variant="ghost"
+						size="lg"
+						fullWidth
 						onPress={handleLogin}
-						hitSlop={8}
 						accessibilityLabel="Đăng nhập vào tài khoản"
-						accessibilityRole="button"
-					>
-						<Text style={styles.loginLink}>Đăng nhập</Text>
-					</Pressable>
+					/>
 				</Animated.View>
 			</View>
 		</ScreenWrapper>
@@ -73,15 +75,15 @@ function createStyles(colors: ThemeColors) {
 			flex: 1,
 			alignItems: "center",
 			justifyContent: "space-between",
-			paddingVertical: 48,
+			paddingVertical: SPACING[48],
 		},
 		logoSection: {
 			alignItems: "center",
-			gap: 12,
+			gap: SPACING[12],
 		},
 		logo: {
-			width: 80,
-			height: 80,
+			width: s(80),
+			height: s(80),
 		},
 		logoText: {
 			color: colors.text.primary,
@@ -91,7 +93,7 @@ function createStyles(colors: ThemeColors) {
 		},
 		taglineSection: {
 			alignItems: "center",
-			gap: 4,
+			gap: SPACING[4],
 		},
 		tagline: {
 			color: colors.text.primary,
@@ -101,13 +103,8 @@ function createStyles(colors: ThemeColors) {
 		},
 		actions: {
 			width: "100%",
-			gap: 20,
+			gap: SPACING[20],
 			alignItems: "center",
-		},
-		loginLink: {
-			color: colors.text.secondary,
-			fontSize: 15,
-			fontWeight: "500",
 		},
 	});
 }

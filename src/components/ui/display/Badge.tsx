@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, RADIUS, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import type { BadgeProps } from "@/types";
 
@@ -16,7 +17,7 @@ export function Badge({ label, color, textColor, size = "md", onPress, onDismiss
 		[colors, bgColor, txtColor],
 	);
 
-	const dismissIconSize = size === "sm" ? 12 : 14;
+	const dismissIconSize = size === "sm" ? FONT_SIZE[12] : FONT_SIZE[14];
 
 	const content = (
 		<View style={[styles.badge, size === "sm" && styles.badgeSm]}>
@@ -53,15 +54,15 @@ function createStyles(_colors: ThemeColors, bgColor: string, txtColor: string) {
 		badge: {
 			flexDirection: "row",
 			alignItems: "center",
-			borderRadius: 999,
-			paddingVertical: 4,
-			paddingHorizontal: 12,
+			borderRadius: RADIUS.full,
+			paddingVertical: SPACING[4],
+			paddingHorizontal: SPACING[12],
 			alignSelf: "flex-start",
 			backgroundColor: bgColor,
 		},
-		badgeSm: { paddingVertical: 2, paddingHorizontal: 8 },
-		text: { fontSize: 13, fontWeight: "500", color: txtColor },
-		textSm: { fontSize: 11 },
-		dismissButton: { marginLeft: 4 },
+		badgeSm: { paddingVertical: SPACING[2], paddingHorizontal: SPACING[8] },
+		text: { fontSize: FONT_SIZE[13], fontWeight: "500", color: txtColor },
+		textSm: { fontSize: FONT_SIZE[11] },
+		dismissButton: { marginLeft: SPACING[4] },
 	});
 }

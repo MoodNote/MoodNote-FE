@@ -2,14 +2,16 @@ import { useEffect, useMemo, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
+import { vs } from "@/utils";
 import type { ProgressBarProps } from "@/types";
 
 export function ProgressBar({
 	value,
 	color,
 	trackColor,
-	height = 6,
+	height = vs(6),
 	animated = true,
 	showLabel,
 }: ProgressBarProps) {
@@ -67,8 +69,8 @@ function createStyles(bgColor: string, fillColor: string, height: number) {
 			backgroundColor: fillColor,
 		},
 		label: {
-			fontSize: 12,
-			marginTop: 4,
+			fontSize: FONT_SIZE[12],
+			marginTop: SPACING[4],
 			textAlign: "right",
 		},
 	});

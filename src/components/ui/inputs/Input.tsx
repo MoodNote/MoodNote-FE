@@ -3,6 +3,7 @@ import type { TextInput as RNTextInput, TextInputProps } from "react-native";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, RADIUS, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import type { InputProps } from "@/types";
 
@@ -59,18 +60,18 @@ export function Input({ label, error, hint, leftIcon, rightIcon, style, onFocus,
 
 function createStyles(colors: ThemeColors) {
 	return StyleSheet.create({
-		wrapper: { marginBottom: 16 },
+		wrapper: { marginBottom: SPACING[16] },
 		label: {
-			fontSize: 14,
+			fontSize: FONT_SIZE[14],
 			fontWeight: "500",
-			marginBottom: 6,
+			marginBottom: SPACING[6],
 			color: colors.input.label,
 		},
 		inputRow: {
 			flexDirection: "row",
 			alignItems: "center",
 			borderWidth: 1,
-			borderRadius: 8,
+			borderRadius: RADIUS.sm,
 			backgroundColor: colors.input.background,
 		},
 		inputBorderDefault: { borderColor: colors.input.border },
@@ -78,15 +79,15 @@ function createStyles(colors: ThemeColors) {
 		inputBorderError: { borderColor: colors.input.borderError },
 		input: {
 			flex: 1,
-			paddingHorizontal: 12,
-			paddingVertical: 10,
-			fontSize: 15,
+			paddingHorizontal: SPACING[12],
+			paddingVertical: SPACING[10],
+			fontSize: FONT_SIZE[15],
 			color: colors.input.text,
 		},
-		inputWithIcon: { paddingHorizontal: 8 },
-		iconLeft: { paddingLeft: 12 },
-		iconRight: { paddingRight: 12 },
-		error: { fontSize: 12, color: colors.status.error, marginTop: 4 },
-		hint: { fontSize: 12, color: colors.text.muted, marginTop: 4 },
+		inputWithIcon: { paddingHorizontal: SPACING[8] },
+		iconLeft: { paddingLeft: SPACING[12] },
+		iconRight: { paddingRight: SPACING[12] },
+		error: { fontSize: FONT_SIZE[12], color: colors.status.error, marginTop: SPACING[4] },
+		hint: { fontSize: FONT_SIZE[12], color: colors.text.muted, marginTop: SPACING[4] },
 	});
 }

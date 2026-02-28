@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import type { LoadingSpinnerProps } from "@/types";
 
@@ -40,11 +41,11 @@ function createStyles(colors: ThemeColors) {
 		inline: {
 			alignItems: "center",
 			justifyContent: "center",
-			padding: 8,
+			padding: SPACING[8],
 		},
 		message: {
-			marginTop: 10,
-			fontSize: 14,
+			marginTop: SPACING[10],
+			fontSize: FONT_SIZE[14],
 			color: colors.text.muted,
 			textAlign: "center",
 		},

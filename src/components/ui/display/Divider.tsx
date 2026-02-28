@@ -2,10 +2,11 @@ import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import type { DividerProps } from "@/types";
 
-export function Divider({ label, spacing = 8 }: DividerProps) {
+export function Divider({ label, spacing = SPACING[8] }: DividerProps) {
 	const colors = useThemeColors();
 	const styles = useMemo(() => createStyles(colors, spacing), [colors, spacing]);
 
@@ -36,9 +37,9 @@ function createStyles(colors: ThemeColors, spacing: number) {
 		},
 		line: { flex: 1, height: 1, backgroundColor: colors.border.subtle },
 		label: {
-			fontSize: 12,
+			fontSize: FONT_SIZE[12],
 			color: colors.text.muted,
-			marginHorizontal: 10,
+			marginHorizontal: SPACING[10],
 		},
 	});
 }

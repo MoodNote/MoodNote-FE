@@ -2,8 +2,10 @@ import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, RADIUS, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import type { SegmentedControlProps } from "@/types";
+import { s } from "@/utils";
 
 export function SegmentedControl({ options, value, onChange }: SegmentedControlProps) {
 	const colors = useThemeColors();
@@ -37,19 +39,19 @@ function createStyles(colors: ThemeColors) {
 	return StyleSheet.create({
 		container: {
 			flexDirection: "row",
-			gap: 6,
-			paddingHorizontal: 2,
-			paddingVertical: 2,
+			gap: SPACING[6],
+			paddingHorizontal: SPACING[2],
+			paddingVertical: SPACING[2],
 		},
 		segment: {
-			paddingVertical: 7,
-			paddingHorizontal: 16,
-			borderRadius: 8,
+			paddingVertical: s(7),
+			paddingHorizontal: SPACING[16],
+			borderRadius: RADIUS.sm,
 			backgroundColor: colors.background.secondary,
 		},
 		segmentActive: { backgroundColor: colors.brand.primary },
 		label: {
-			fontSize: 14,
+			fontSize: FONT_SIZE[14],
 			fontWeight: "500",
 			color: colors.text.secondary,
 		},

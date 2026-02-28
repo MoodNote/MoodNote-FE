@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, LINE_HEIGHT, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import type { EmptyStateProps } from "@/types";
 import { Button } from "../buttons/Button";
@@ -35,23 +36,23 @@ function createStyles(colors: ThemeColors) {
 			flex: 1,
 			alignItems: "center",
 			justifyContent: "center",
-			paddingHorizontal: 32,
-			paddingVertical: 48,
+			paddingHorizontal: SPACING[32],
+			paddingVertical: SPACING[48],
 		},
-		iconWrapper: { marginBottom: 16, opacity: 0.6 },
+		iconWrapper: { marginBottom: SPACING[16], opacity: 0.6 },
 		title: {
-			fontSize: 17,
+			fontSize: FONT_SIZE[17],
 			fontWeight: "600",
 			color: colors.text.primary,
 			textAlign: "center",
-			marginBottom: 8,
+			marginBottom: SPACING[8],
 		},
 		subtitle: {
-			fontSize: 14,
+			fontSize: FONT_SIZE[14],
 			color: colors.text.muted,
 			textAlign: "center",
-			lineHeight: 20,
+			lineHeight: LINE_HEIGHT.normal,
 		},
-		actionWrapper: { marginTop: 20 },
+		actionWrapper: { marginTop: SPACING[20] },
 	});
 }

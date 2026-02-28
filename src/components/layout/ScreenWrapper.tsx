@@ -1,4 +1,5 @@
 import { useThemeColors } from "@/hooks";
+import { SPACING } from "@/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { type ReactNode } from "react";
 import {
@@ -141,6 +142,6 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	padded: {
-		paddingHorizontal: 24,
+		paddingHorizontal: SPACING[24],
 	},
 });

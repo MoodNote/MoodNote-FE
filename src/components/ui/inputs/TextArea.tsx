@@ -3,8 +3,10 @@ import type { TextInputProps } from "react-native";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, RADIUS, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import type { TextAreaProps } from "@/types";
+import { vs } from "@/utils";
 
 export function TextArea({
 	label,
@@ -12,7 +14,7 @@ export function TextArea({
 	hint,
 	maxLength,
 	showCharCount,
-	minHeight = 120,
+	minHeight = vs(120),
 	style,
 	onFocus,
 	onBlur,
@@ -89,19 +91,19 @@ export function TextArea({
 
 function createStyles(colors: ThemeColors, minHeight: number) {
 	return StyleSheet.create({
-		wrapper: { marginBottom: 16 },
+		wrapper: { marginBottom: SPACING[16] },
 		label: {
-			fontSize: 14,
+			fontSize: FONT_SIZE[14],
 			fontWeight: "500",
-			marginBottom: 6,
+			marginBottom: SPACING[6],
 			color: colors.input.label,
 		},
 		input: {
 			borderWidth: 1,
-			borderRadius: 8,
-			paddingHorizontal: 12,
-			paddingVertical: 10,
-			fontSize: 15,
+			borderRadius: RADIUS.sm,
+			paddingHorizontal: SPACING[12],
+			paddingVertical: SPACING[10],
+			fontSize: FONT_SIZE[15],
 			color: colors.input.text,
 			backgroundColor: colors.input.background,
 			minHeight,
@@ -113,12 +115,12 @@ function createStyles(colors: ThemeColors, minHeight: number) {
 			flexDirection: "row",
 			justifyContent: "space-between",
 			alignItems: "flex-start",
-			marginTop: 4,
+			marginTop: SPACING[4],
 		},
 		footerLeft: { flex: 1 },
-		error: { fontSize: 12, color: colors.status.error },
-		hint: { fontSize: 12, color: colors.text.muted },
-		charCount: { fontSize: 12, color: colors.text.muted, marginLeft: 8 },
+		error: { fontSize: FONT_SIZE[12], color: colors.status.error },
+		hint: { fontSize: FONT_SIZE[12], color: colors.text.muted },
+		charCount: { fontSize: FONT_SIZE[12], color: colors.text.muted, marginLeft: SPACING[8] },
 		charCountWarn: { color: colors.status.warning },
 	});
 }

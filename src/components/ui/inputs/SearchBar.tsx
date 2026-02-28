@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
+import { FONT_SIZE, RADIUS, SIZE, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import type { SearchBarProps } from "@/types";
 
@@ -69,17 +70,17 @@ function createStyles(colors: ThemeColors) {
 			alignItems: "center",
 			borderWidth: 1,
 			borderColor: colors.input.border,
-			borderRadius: 10,
+			borderRadius: RADIUS.md,
 			backgroundColor: colors.input.background,
-			paddingHorizontal: 12,
-			height: 44,
+			paddingHorizontal: SPACING[12],
+			height: SIZE.md,
 		},
 		containerFocused: { borderColor: colors.input.borderFocused },
-		searchIcon: { marginRight: 8 },
-		clearIcon: { marginLeft: 8 },
+		searchIcon: { marginRight: SPACING[8] },
+		clearIcon: { marginLeft: SPACING[8] },
 		input: {
 			flex: 1,
-			fontSize: 15,
+			fontSize: FONT_SIZE[15],
 			color: colors.input.text,
 			padding: 0,
 		},
