@@ -15,7 +15,7 @@ const BLOB_LAYERS = Array.from({ length: 24 }, (_, i) => {
 	const factor = 1 - t * 0.92; // từ 1 → ~0.08
 
 	// opacity tăng rồi giảm (parabolic)
-	const opacity = 0.03 + Math.sin(t * Math.PI) * 0.04;
+	const opacity = (0.03 + Math.sin(t * Math.PI) * 0.04) * 0.3;
 
 	return {
 		factor: Number(factor.toFixed(2)),
@@ -94,8 +94,8 @@ export function ScreenWrapper({
 			style={styles.gradient}>
 			{/* Ambient glow blobs — positioned absolutely behind all content */}
 			<View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-				<Blob color={colors.brand.secondary} radius={180} top={-80} right={-80} />
-				<Blob color={colors.brand.primary} radius={140} top={280} left={-100} />
+				<Blob color={colors.brand.secondary} radius={180} top={-80} right={-160} />
+				<Blob color={colors.brand.secondary} radius={140} top={280} left={-150} />
 				<Blob color={colors.brand.secondary} radius={130} bottom={-60} right={-50} />
 			</View>
 
