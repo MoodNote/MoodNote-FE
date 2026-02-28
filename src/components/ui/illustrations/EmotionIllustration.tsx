@@ -24,8 +24,7 @@ export function EmotionIllustration() {
 			{/* Main panel */}
 			<LinearGradient
 				colors={[colors.background.elevated, colors.background.card]}
-				style={styles.panel}
-			>
+				style={styles.panel}>
 				{/* Header */}
 				<View style={styles.header}>
 					<View style={styles.headerDot} />

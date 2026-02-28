@@ -18,8 +18,7 @@ export function JournalIllustration() {
 			{/* Main book card */}
 			<LinearGradient
 				colors={[colors.background.elevated, colors.background.card]}
-				style={styles.card}
-			>
+				style={styles.card}>
 				{/* Journal lines */}
 				<View style={styles.linesContainer}>
 					<View style={[styles.line, { width: "80%" }]} />
@@ -32,8 +31,7 @@ export function JournalIllustration() {
 				<View style={styles.iconWrapper}>
 					<LinearGradient
 						colors={[colors.brand.secondary, colors.brand.primary]}
-						style={styles.iconBackground}
-					>
+						style={styles.iconBackground}>
 						<MaterialCommunityIcons
 							name="book-open-variant"
 							size={52}

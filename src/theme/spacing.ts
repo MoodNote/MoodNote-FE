@@ -49,12 +49,12 @@ export type RadiusToken = keyof typeof RADIUS;
 //   textAreaMinH = vs(120), progressBarH = vs(6), statusDot = s(8)
 
 export const SIZE = {
-	xs:    s(32),  // small: iconButtonSm, avatarSm, buttonSm height
-	sm:    s(40),  // iconButtonMd
-	md:    s(44),  // standard touch target: avatarMd, buttonMd height, inputHeight
-	lg:    s(48),  // iconButtonLg
-	xl:    s(52),  // large: buttonLg height
-	"2xl": s(64),  // extra-large: avatarLg
+	xs: s(32), // small: iconButtonSm, avatarSm, buttonSm height
+	sm: s(40), // iconButtonMd
+	md: s(44), // standard touch target: avatarMd, buttonMd height, inputHeight
+	lg: s(48), // iconButtonLg
+	xl: s(52), // large: buttonLg height
+	"2xl": s(64), // extra-large: avatarLg
 } as const;
 
 export type SizeToken = keyof typeof SIZE;

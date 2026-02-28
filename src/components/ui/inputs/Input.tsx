@@ -3,11 +3,21 @@ import type { TextInput as RNTextInput, TextInputProps } from "react-native";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
-import { FONT_SIZE, RADIUS, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
+import { FONT_SIZE, RADIUS, SPACING } from "@/theme";
 import type { InputProps } from "@/types";
 
-export function Input({ label, error, hint, leftIcon, rightIcon, style, onFocus, onBlur, ...rest }: InputProps) {
+export function Input({
+	label,
+	error,
+	hint,
+	leftIcon,
+	rightIcon,
+	style,
+	onFocus,
+	onBlur,
+	...rest
+}: InputProps) {
 	const colors = useThemeColors();
 	const [focused, setFocused] = useState(false);
 	const styles = useMemo(() => createStyles(colors), [colors]);

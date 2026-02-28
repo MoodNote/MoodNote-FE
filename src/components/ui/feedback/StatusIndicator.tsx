@@ -2,10 +2,10 @@ import { useEffect, useMemo, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
-import { FONT_SIZE, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
-import { s } from "@/utils";
+import { FONT_SIZE, SPACING } from "@/theme";
 import type { StatusIndicatorProps, StatusIndicatorStatus } from "@/types";
+import { s } from "@/utils";
 
 const LABEL_MAP: Record<StatusIndicatorStatus, string> = {
 	saving: "Đang lưu...",
@@ -49,12 +49,8 @@ export function StatusIndicator({ status, showLabel = true }: StatusIndicatorPro
 
 	return (
 		<View style={styles.row}>
-			<Animated.View
-				style={[styles.dot, { backgroundColor: dotColor, opacity: pulseAnim }]}
-			/>
-			{showLabel && (
-				<Text style={styles.label}>{LABEL_MAP[status]}</Text>
-			)}
+			<Animated.View style={[styles.dot, { backgroundColor: dotColor, opacity: pulseAnim }]} />
+			{showLabel && <Text style={styles.label}>{LABEL_MAP[status]}</Text>}
 		</View>
 	);
 }

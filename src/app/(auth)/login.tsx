@@ -46,24 +46,23 @@ export default function LoginScreen() {
 				style={styles.scroll}
 				contentContainerStyle={styles.scrollContent}
 				keyboardShouldPersistTaps="handled"
-				showsVerticalScrollIndicator={false}
-			>
+				showsVerticalScrollIndicator={false}>
 				{/* Heading */}
-				<Animated.View entering={FadeInDown.duration(400)} style={styles.heading}>
+				<Animated.View entering={FadeInDown.duration(400)}
+style={styles.heading}>
 					<Text style={styles.title}>Đăng nhập</Text>
 				</Animated.View>
 
 				{/* Form */}
-				<Animated.View entering={FadeInDown.duration(400).delay(100)} style={styles.form}>
+				<Animated.View entering={FadeInDown.duration(400).delay(100)}
+style={styles.form}>
 					<Input
 						label="Tên đăng nhập"
 						placeholder="email@example.com"
 						keyboardType="email-address"
 						autoCapitalize="none"
 						autoCorrect={false}
-						leftIcon={
-							<Feather name="user" size={18} color={colors.iconDefault} />
-						}
+						leftIcon={<Feather name="user" size={18} color={colors.iconDefault} />}
 						{...getFieldProps("email")}
 					/>
 
@@ -73,16 +72,13 @@ export default function LoginScreen() {
 						secureTextEntry={!passwordVisible}
 						autoCapitalize="none"
 						autoCorrect={false}
-						leftIcon={
-							<Feather name="lock" size={18} color={colors.iconDefault} />
-						}
+						leftIcon={<Feather name="lock" size={18} color={colors.iconDefault} />}
 						rightIcon={
 							<Pressable
 								onPress={togglePasswordVisible}
 								hitSlop={8}
 								accessibilityLabel={passwordVisible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-								accessibilityRole="button"
-							>
+								accessibilityRole="button">
 								<Feather
 									name={passwordVisible ? "eye-off" : "eye"}
 									size={18}
@@ -106,8 +102,7 @@ export default function LoginScreen() {
 						onPress={handleForgotPassword}
 						hitSlop={8}
 						accessibilityLabel="Quên mật khẩu"
-						accessibilityRole="link"
-					>
+						accessibilityRole="link">
 						<Text style={styles.forgotText}>Quên mật khẩu?</Text>
 					</Pressable>
 				</Animated.View>
@@ -126,14 +121,14 @@ export default function LoginScreen() {
 				</Animated.View>
 
 				{/* Go to register */}
-				<Animated.View entering={FadeIn.duration(400).delay(300)} style={styles.registerRow}>
+				<Animated.View entering={FadeIn.duration(400).delay(300)}
+style={styles.registerRow}>
 					<Text style={styles.registerPrompt}>Chưa có tài khoản? </Text>
 					<Pressable
 						onPress={handleGoToRegister}
 						hitSlop={8}
 						accessibilityLabel="Tạo tài khoản mới"
-						accessibilityRole="link"
-					>
+						accessibilityRole="link">
 						<Text style={styles.registerLink}>Đăng kí</Text>
 					</Pressable>
 				</Animated.View>

@@ -29,13 +29,8 @@ export function MusicIllustration() {
 			{/* Central headphones */}
 			<LinearGradient
 				colors={[colors.brand.secondary, colors.brand.primary]}
-				style={styles.iconBackground}
-			>
-				<MaterialCommunityIcons
-					name="headphones"
-					size={72}
-					color={colors.text.primary}
-				/>
+				style={styles.iconBackground}>
+				<MaterialCommunityIcons name="headphones" size={72} color={colors.text.primary} />
 			</LinearGradient>
 
 			{/* Bottom glow bar */}

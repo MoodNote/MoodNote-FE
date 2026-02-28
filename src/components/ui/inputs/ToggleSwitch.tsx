@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { Platform, StyleSheet, Switch, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
-import { FONT_SIZE, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
+import { FONT_SIZE, SPACING } from "@/theme";
 import type { ToggleSwitchProps } from "@/types";
 
 export function ToggleSwitch({
@@ -24,9 +24,8 @@ export function ToggleSwitch({
 		[colors],
 	);
 
-	const thumbColor = Platform.OS === "android"
-		? value ? colors.brand.primary : colors.text.muted
-		: undefined;
+	const thumbColor =
+		Platform.OS === "android" ? (value ? colors.brand.primary : colors.text.muted) : undefined;
 
 	return (
 		<View style={[styles.row, disabled === true && styles.disabled]}>

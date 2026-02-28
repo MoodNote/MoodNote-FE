@@ -2,13 +2,7 @@ import { useThemeColors } from "@/hooks";
 import { SPACING } from "@/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { type ReactNode } from "react";
-import {
-	KeyboardAvoidingView,
-	Platform,
-	StyleSheet,
-	View,
-	type ViewStyle,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, StyleSheet, View, type ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // ── Ambient glow blobs ────────────────────────────────────────────────────────
@@ -16,20 +10,18 @@ import { SafeAreaView } from "react-native-safe-area-context";
 // Each layer is a sibling View — opacities add up at the center, creating a
 // smooth radial falloff that approximates a soft glow.
 
-const BLOB_LAYERS = [
-	{ factor: 1.00, opacity: 0.03  },
-	{ factor: 0.91, opacity: 0.035 },
-	{ factor: 0.82, opacity: 0.04  },
-	{ factor: 0.74, opacity: 0.045 },
-	{ factor: 0.65, opacity: 0.05  },
-	{ factor: 0.57, opacity: 0.055 },
-	{ factor: 0.50, opacity: 0.06  },
-	{ factor: 0.42, opacity: 0.065 },
-	{ factor: 0.35, opacity: 0.07  },
-	{ factor: 0.27, opacity: 0.06  },
-	{ factor: 0.20, opacity: 0.05  },
-	{ factor: 0.12, opacity: 0.04  },
-] as const;
+const BLOB_LAYERS = Array.from({ length: 24 }, (_, i) => {
+	const t = i / 23; // 0 → 1
+	const factor = 1 - t * 0.92; // từ 1 → ~0.08
+
+	// opacity tăng rồi giảm (parabolic)
+	const opacity = 0.03 + Math.sin(t * Math.PI) * 0.04;
+
+	return {
+		factor: Number(factor.toFixed(2)),
+		opacity: Number(opacity.toFixed(3)),
+	};
+});
 // Cumulative at center ≈ 0.60; at outer edge ≈ 0.03
 
 interface BlobProps {
@@ -56,8 +48,7 @@ function Blob({ color, radius, top, bottom, left, right }: BlobProps) {
 				height: size,
 				alignItems: "center",
 				justifyContent: "center",
-			}}
-		>
+			}}>
 			{BLOB_LAYERS.map(({ factor, opacity }, i) => {
 				const r = radius * factor;
 				return (
@@ -95,19 +86,16 @@ export function ScreenWrapper({
 }: ScreenWrapperProps) {
 	const colors = useThemeColors();
 
-	const inner = (
-		<View style={[styles.inner, padded && styles.padded, style]}>{children}</View>
-	);
+	const inner = <View style={[styles.inner, padded && styles.padded, style]}>{children}</View>;
 
 	return (
 		<LinearGradient
 			colors={[colors.background.secondary, colors.background.primary]}
-			style={styles.gradient}
-		>
+			style={styles.gradient}>
 			{/* Ambient glow blobs — positioned absolutely behind all content */}
 			<View style={StyleSheet.absoluteFillObject} pointerEvents="none">
 				<Blob color={colors.brand.secondary} radius={180} top={-80} right={-80} />
-				<Blob color={colors.brand.primary}   radius={140} top={280} left={-100} />
+				<Blob color={colors.brand.primary} radius={140} top={280} left={-100} />
 				<Blob color={colors.brand.secondary} radius={130} bottom={-60} right={-50} />
 			</View>
 
@@ -115,8 +103,7 @@ export function ScreenWrapper({
 				{keyboard ? (
 					<KeyboardAvoidingView
 						behavior={Platform.OS === "ios" ? "padding" : "height"}
-						style={styles.keyboard}
-					>
+						style={styles.keyboard}>
 						{inner}
 					</KeyboardAvoidingView>
 				) : (

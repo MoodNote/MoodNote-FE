@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
-import { FONT_SIZE, LINE_HEIGHT, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
+import { FONT_SIZE, LINE_HEIGHT, SPACING } from "@/theme";
 import type { EmptyStateProps } from "@/types";
 import { Button } from "../buttons/Button";
 
@@ -18,12 +18,7 @@ export function EmptyState({ icon, title, subtitle, action }: EmptyStateProps) {
 			{subtitle != null && <Text style={styles.subtitle}>{subtitle}</Text>}
 			{action != null && (
 				<View style={styles.actionWrapper}>
-					<Button
-						title={action.label}
-						onPress={action.onPress}
-						variant="outline"
-						size="sm"
-					/>
+					<Button title={action.label} onPress={action.onPress} variant="outline" size="sm" />
 				</View>
 			)}
 		</View>

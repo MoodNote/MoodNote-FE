@@ -1,29 +1,42 @@
+import { ScreenWrapper } from "@/components/layout";
+import { Button } from "@/components/ui";
 import {
 	EmotionIllustration,
 	JournalIllustration,
 	MusicIllustration,
 } from "@/components/ui/illustrations";
-import { Button } from "@/components/ui";
-import { ScreenWrapper } from "@/components/layout";
 import { ONBOARDING_COMPLETED_KEY, ROUTES } from "@/constants";
 import { useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
 import { setStorageItem } from "@/utils/storage";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useCallback, useEffect, useMemo, useState, type ComponentType, type ReactNode } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	type ComponentType,
+	type ReactNode,
+} from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
 	Easing,
-	FadeIn,
-	FadeInDown,
-	ZoomIn,
+	SlideInLeft,
+	SlideInRight,
+	interpolate,
+	interpolateColor,
 	useAnimatedStyle,
 	useSharedValue,
 	withRepeat,
 	withSequence,
 	withTiming,
 } from "react-native-reanimated";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const SWIPE_THRESHOLD = 50;
 
 // ─── Slide Data ───────────────────────────────────────────────────────────────
 
@@ -49,49 +62,6 @@ const SLIDES: Slide[] = [
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-interface ArrowButtonProps {
-	onPress: () => void;
-	styles: ReturnType<typeof createStyles>;
-	colors: ThemeColors;
-}
-
-function ArrowButton({ onPress, styles, colors }: ArrowButtonProps) {
-	const scale = useSharedValue(1);
-
-	useEffect(() => {
-		scale.value = withRepeat(
-			withSequence(
-				withTiming(1.1, { duration: 800, easing: Easing.inOut(Easing.sin) }),
-				withTiming(1.0, { duration: 800, easing: Easing.inOut(Easing.sin) }),
-			),
-			-1,
-			false,
-		);
-	}, [scale]);
-
-	const animStyle = useAnimatedStyle(() => ({
-		transform: [{ scale: scale.value }],
-	}));
-
-	return (
-		<Animated.View style={animStyle}>
-			<Pressable
-				style={styles.arrowButton}
-				onPress={onPress}
-				accessibilityLabel="Bắt đầu"
-				accessibilityRole="button"
-			>
-				<LinearGradient
-					colors={[colors.brand.secondary, colors.brand.primary]}
-					style={styles.arrowGradient}
-				>
-					<Text style={styles.arrowIcon}>→</Text>
-				</LinearGradient>
-			</Pressable>
-		</Animated.View>
-	);
-}
-
 function FloatingContainer({ children }: { children: ReactNode }) {
 	const translateY = useSharedValue(0);
 
@@ -116,24 +86,25 @@ function FloatingContainer({ children }: { children: ReactNode }) {
 interface AnimatedDotProps {
 	isActive: boolean;
 	styles: ReturnType<typeof createStyles>;
+	colors: ThemeColors;
 }
 
-function AnimatedDot({ isActive, styles }: AnimatedDotProps) {
-	const width = useSharedValue(isActive ? 20 : 8);
+function AnimatedDot({ isActive, styles, colors }: AnimatedDotProps) {
+	const progress = useSharedValue(isActive ? 1 : 0);
 
 	useEffect(() => {
-		width.value = withTiming(isActive ? 20 : 8, { duration: 250 });
-	}, [isActive, width]);
+		progress.value = withTiming(isActive ? 1 : 0, { duration: 250 });
+	}, [isActive, progress]);
 
 	const animStyle = useAnimatedStyle(() => ({
-		width: width.value,
+		width: interpolate(progress.value, [0, 1], [8, 20]),
+		backgroundColor: interpolateColor(progress.value, [0, 1], [
+			colors.border.default,
+			colors.brand.primary,
+		]),
 	}));
 
-	return (
-		<Animated.View
-			style={[styles.dot, isActive && styles.dotActiveColor, animStyle]}
-		/>
-	);
+	return <Animated.View style={[styles.dot, animStyle]} />;
 }
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
@@ -142,6 +113,7 @@ export default function OnboardingScreen() {
 	const colors = useThemeColors();
 	const styles = useMemo(() => createStyles(colors), [colors]);
 	const [step, setStep] = useState(0);
+	const slideDir = useRef<"forward" | "backward">("forward");
 
 	const markDoneAndNavigate = useCallback(async () => {
 		await setStorageItem(ONBOARDING_COMPLETED_KEY, "true");
@@ -149,53 +121,38 @@ export default function OnboardingScreen() {
 	}, []);
 
 	const handleNext = useCallback(async () => {
-		if (step < SLIDES.length) {
+		if (step < SLIDES.length - 1) {
+			slideDir.current = "forward";
 			setStep(step + 1);
 		} else {
 			await markDoneAndNavigate();
 		}
 	}, [step, markDoneAndNavigate]);
 
-	// ── Step 0: Splash ─────────────────────────────────────────────────────────
-	if (step === 0) {
-		return (
-			<ScreenWrapper padded={false}>
-				<View style={styles.splashContent}>
-					<Animated.View entering={ZoomIn.duration(500)}>
-						<Image
-							source={require("../../../assets/images/splash-icon.png")}
-							style={styles.splashLogo}
-							resizeMode="contain"
-						/>
-					</Animated.View>
-					<Animated.View entering={FadeInDown.duration(400).delay(200)}>
-						<Text style={styles.splashTitle}>MoodNote</Text>
-					</Animated.View>
-					<Animated.View entering={FadeInDown.duration(400).delay(350)}>
-						<Text style={styles.splashSubtitle}>
-							{"Mọi thứ trở nên ổn áo, hãy ở đây một chút,\ncùng âm nhạc và sự lắng nghe."}
-						</Text>
-					</Animated.View>
-				</View>
+	const handlePrev = useCallback(() => {
+		if (step > 0) {
+			slideDir.current = "backward";
+			setStep(step - 1);
+		}
+	}, [step]);
 
-				<View style={styles.splashFooter}>
-					<Animated.View entering={FadeIn.duration(400).delay(500)}>
-						<ArrowButton
-							onPress={() => setStep(1)}
-							styles={styles}
-							colors={colors}
-						/>
-					</Animated.View>
-				</View>
-			</ScreenWrapper>
-		);
-	}
+	const swipeGesture = Gesture.Pan()
+		.runOnJS(true)
+		.activeOffsetX([-10, 10])
+		.onEnd((e) => {
+			if (e.translationX < -SWIPE_THRESHOLD) {
+				handleNext();
+			} else if (e.translationX > SWIPE_THRESHOLD) {
+				handlePrev();
+			}
+		});
 
-	// ── Steps 1-3: Slides ──────────────────────────────────────────────────────
-	const slideIndex = step - 1;
-	const slide = SLIDES[slideIndex];
+	const slide = SLIDES[step];
 	const { Illustration } = slide;
-	const isLastSlide = step === SLIDES.length;
+	const isLastSlide = step === SLIDES.length - 1;
+	const entering = slideDir.current === "forward"
+		? SlideInRight.duration(350)
+		: SlideInLeft.duration(350);
 
 	return (
 		<ScreenWrapper padded={false}>
@@ -210,40 +167,37 @@ export default function OnboardingScreen() {
 				/>
 			</View>
 
-			{/* Slide content animates on step change */}
-			<Animated.View key={step} entering={FadeIn.duration(350)} style={styles.slideContent}>
-				{/* Illustration */}
-				<View style={styles.illustrationContainer}>
-					<FloatingContainer>
-						<Illustration />
-					</FloatingContainer>
-				</View>
+			<GestureDetector gesture={swipeGesture}>
+				<View style={styles.slideContent}>
+					{/* Only the illustration slides — direction-aware */}
+					<Animated.View key={step} entering={entering} style={styles.illustrationContainer}>
+						<FloatingContainer>
+							<Illustration />
+						</FloatingContainer>
+					</Animated.View>
 
-				{/* Bottom content */}
-				<View style={styles.slideBottom}>
-					<Text style={styles.slideTitle}>{slide.title}</Text>
+					{/* Bottom content — static */}
+					<View style={styles.slideBottom}>
+						<Text style={styles.slideTitle}>{slide.title}</Text>
 
-					{/* Dots */}
-					<View style={styles.dots}>
-						{SLIDES.map((_, i) => (
-							<AnimatedDot
-								key={i}
-								isActive={i === slideIndex}
-								styles={styles}
-							/>
-						))}
+						{/* Dots */}
+						<View style={styles.dots}>
+							{SLIDES.map((_, i) => (
+								<AnimatedDot key={i} isActive={i === step} styles={styles} colors={colors} />
+							))}
+						</View>
+
+						<Button
+							title={isLastSlide ? "Bắt đầu" : "Tiếp theo"}
+							variant="primary"
+							size="lg"
+							fullWidth
+							onPress={handleNext}
+							accessibilityLabel={isLastSlide ? "Hoàn thành giới thiệu" : "Sang slide tiếp theo"}
+						/>
 					</View>
-
-					<Button
-						title={isLastSlide ? "Bắt đầu" : "Tiếp theo"}
-						variant="primary"
-						size="lg"
-						fullWidth
-						onPress={handleNext}
-						accessibilityLabel={isLastSlide ? "Hoàn thành giới thiệu" : "Sang slide tiếp theo"}
-					/>
 				</View>
-			</Animated.View>
+			</GestureDetector>
 		</ScreenWrapper>
 	);
 }
@@ -252,52 +206,6 @@ export default function OnboardingScreen() {
 
 function createStyles(colors: ThemeColors) {
 	return StyleSheet.create({
-		// Splash
-		splashContent: {
-			flex: 1,
-			alignItems: "center",
-			justifyContent: "center",
-			gap: 16,
-			paddingHorizontal: 32,
-		},
-		splashLogo: {
-			width: 100,
-			height: 100,
-		},
-		splashTitle: {
-			color: colors.text.primary,
-			fontSize: 36,
-			fontWeight: "700",
-			letterSpacing: 1,
-		},
-		splashSubtitle: {
-			color: colors.text.secondary,
-			fontSize: 14,
-			textAlign: "center",
-			lineHeight: 22,
-		},
-		splashFooter: {
-			alignItems: "center",
-			paddingBottom: 48,
-		},
-		arrowButton: {
-			borderRadius: 32,
-			overflow: "hidden",
-		},
-		arrowGradient: {
-			width: 64,
-			height: 64,
-			alignItems: "center",
-			justifyContent: "center",
-			borderRadius: 32,
-		},
-		arrowIcon: {
-			color: colors.text.primary,
-			fontSize: 24,
-			fontWeight: "700",
-		},
-
-		// Slides
 		skipRow: {
 			alignSelf: "flex-end",
 			paddingRight: 16,
@@ -333,9 +241,6 @@ function createStyles(colors: ThemeColors) {
 			height: 8,
 			borderRadius: 4,
 			backgroundColor: colors.border.default,
-		},
-		dotActiveColor: {
-			backgroundColor: colors.brand.primary,
 		},
 	});
 }

@@ -1,28 +1,22 @@
 import { useCallback, useMemo } from "react";
 import {
 	KeyboardAvoidingView,
-	Modal as RNModal,
 	Platform,
 	Pressable,
+	Modal as RNModal,
 	StyleSheet,
 	Text,
 	View,
 } from "react-native";
 
 import { useThemeColors } from "@/hooks";
-import { FONT_SIZE, RADIUS, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
+import { FONT_SIZE, RADIUS, SPACING } from "@/theme";
 import type { ModalProps } from "@/types";
-import { IconButton } from "../buttons/IconButton";
 import { Ionicons } from "@expo/vector-icons";
+import { IconButton } from "../buttons/IconButton";
 
-export function Modal({
-	visible,
-	onDismiss,
-	children,
-	title,
-	dismissible = true,
-}: ModalProps) {
+export function Modal({ visible, onDismiss, children, title, dismissible = true }: ModalProps) {
 	const colors = useThemeColors();
 	const styles = useMemo(() => createStyles(colors), [colors]);
 

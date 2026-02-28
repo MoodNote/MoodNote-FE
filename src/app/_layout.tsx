@@ -5,6 +5,7 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 
 export { ErrorBoundary } from "expo-router";
@@ -32,15 +33,17 @@ export default function RootLayout() {
 	if (!loaded) return null;
 
 	return (
-		<AuthProvider>
-			<ThemeProvider>
-				<Stack screenOptions={{ headerShown: false }}>
-					<Stack.Screen name="index" />
-					<Stack.Screen name="component-review" />
-					<Stack.Screen name="(auth)" />
-					<Stack.Screen name="(app)" />
-				</Stack>
-			</ThemeProvider>
-		</AuthProvider>
+		<GestureHandlerRootView style={{ flex: 1 }}>
+			<AuthProvider>
+				<ThemeProvider>
+					<Stack screenOptions={{ headerShown: false }}>
+						<Stack.Screen name="index" />
+						<Stack.Screen name="component-review" />
+						<Stack.Screen name="(auth)" />
+						<Stack.Screen name="(app)" />
+					</Stack>
+				</ThemeProvider>
+			</AuthProvider>
+		</GestureHandlerRootView>
 	);
 }

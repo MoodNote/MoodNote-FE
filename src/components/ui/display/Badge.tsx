@@ -1,10 +1,10 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
 import { useThemeColors } from "@/hooks";
-import { FONT_SIZE, RADIUS, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
+import { FONT_SIZE, RADIUS, SPACING } from "@/theme";
 import type { BadgeProps } from "@/types";
 
 export function Badge({ label, color, textColor, size = "md", onPress, onDismiss }: BadgeProps) {
@@ -37,10 +37,7 @@ export function Badge({ label, color, textColor, size = "md", onPress, onDismiss
 
 	if (onPress != null) {
 		return (
-			<Pressable
-				onPress={onPress}
-				accessibilityRole="button"
-				accessibilityLabel={label}>
+			<Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={label}>
 				{content}
 			</Pressable>
 		);

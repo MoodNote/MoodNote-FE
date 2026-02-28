@@ -3,11 +3,11 @@
  * Showcases every UI component in the MoodNote design system.
  */
 
-import { useCallback, useMemo, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 
 import {
 	Avatar,
@@ -16,8 +16,8 @@ import {
 	Card,
 	ConfirmationDialog,
 	Divider,
-	EmptyState,
 	EmotionIllustration,
+	EmptyState,
 	IconButton,
 	Input,
 	JournalIllustration,
@@ -31,8 +31,8 @@ import {
 	SkeletonLoader,
 	StatusIndicator,
 	TextArea,
-	ToggleSwitch,
 	ToastProvider,
+	ToggleSwitch,
 	useToast,
 	WavyLoader,
 } from "@/components/ui";
@@ -70,7 +70,11 @@ function Block({ label, children }: { label: string; children: ReactNode }) {
 // ─── Helper: Row — horizontal flex wrap ────────────────────────────────────────
 
 function Row({ children, gap = 8 }: { children: ReactNode; gap?: number }) {
-	return <View style={{ flexDirection: "row", flexWrap: "wrap", gap, alignItems: "center" }}>{children}</View>;
+	return (
+		<View style={{ flexDirection: "row", flexWrap: "wrap", gap, alignItems: "center" }}>
+			{children}
+		</View>
+	);
 }
 
 // ─── Review Content ────────────────────────────────────────────────────────────
@@ -90,15 +94,23 @@ function ReviewContent() {
 	const [confirmPrimary, setConfirmPrimary] = useState(false);
 	const [confirmDanger, setConfirmDanger] = useState(false);
 
-	const showSuccess = useCallback(() => show({ message: "Đã lưu thành công!", type: "success" }), [show]);
+	const showSuccess = useCallback(
+		() => show({ message: "Đã lưu thành công!", type: "success" }),
+		[show],
+	);
 	const showError = useCallback(() => show({ message: "Đã xảy ra lỗi.", type: "error" }), [show]);
-	const showWarning = useCallback(() => show({ message: "Cảnh báo: pin yếu.", type: "warning" }), [show]);
-	const showInfo = useCallback(() => show({ message: "Phân tích cảm xúc xong.", type: "info" }), [show]);
+	const showWarning = useCallback(
+		() => show({ message: "Cảnh báo: pin yếu.", type: "warning" }),
+		[show],
+	);
+	const showInfo = useCallback(
+		() => show({ message: "Phân tích cảm xúc xong.", type: "info" }),
+		[show],
+	);
 
 	return (
 		<SafeAreaView style={styles.screen}>
 			<ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-
 				{/* Page header */}
 				<View style={styles.pageHeader}>
 					<View>
@@ -114,7 +126,9 @@ function ReviewContent() {
 							/>
 						}
 						onPress={toggleTheme}
-						accessibilityLabel={colorScheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+						accessibilityLabel={
+							colorScheme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+						}
 						variant="filled"
 						size="md"
 					/>
@@ -169,15 +183,30 @@ function ReviewContent() {
 						<Row gap={12}>
 							<View style={styles.iconBtnGroup}>
 								<Text style={styles.iconBtnHint}>ghost</Text>
-								<IconButton icon={<Ionicons name="heart-outline" size={20} color={colors.iconDefault} />} onPress={() => {}} accessibilityLabel="Like" variant="ghost" />
+								<IconButton
+									icon={<Ionicons name="heart-outline" size={20} color={colors.iconDefault} />}
+									onPress={() => {}}
+									accessibilityLabel="Like"
+									variant="ghost"
+								/>
 							</View>
 							<View style={styles.iconBtnGroup}>
 								<Text style={styles.iconBtnHint}>filled</Text>
-								<IconButton icon={<Ionicons name="heart-outline" size={20} color={colors.iconDefault} />} onPress={() => {}} accessibilityLabel="Like" variant="filled" />
+								<IconButton
+									icon={<Ionicons name="heart-outline" size={20} color={colors.iconDefault} />}
+									onPress={() => {}}
+									accessibilityLabel="Like"
+									variant="filled"
+								/>
 							</View>
 							<View style={styles.iconBtnGroup}>
 								<Text style={styles.iconBtnHint}>outline</Text>
-								<IconButton icon={<Ionicons name="heart-outline" size={20} color={colors.iconDefault} />} onPress={() => {}} accessibilityLabel="Like" variant="outline" />
+								<IconButton
+									icon={<Ionicons name="heart-outline" size={20} color={colors.iconDefault} />}
+									onPress={() => {}}
+									accessibilityLabel="Like"
+									variant="outline"
+								/>
 							</View>
 						</Row>
 					</Block>
@@ -185,15 +214,33 @@ function ReviewContent() {
 						<Row gap={12}>
 							<View style={styles.iconBtnGroup}>
 								<Text style={styles.iconBtnHint}>sm</Text>
-								<IconButton icon={<Ionicons name="star-outline" size={14} color={colors.iconDefault} />} onPress={() => {}} accessibilityLabel="Star" size="sm" variant="filled" />
+								<IconButton
+									icon={<Ionicons name="star-outline" size={14} color={colors.iconDefault} />}
+									onPress={() => {}}
+									accessibilityLabel="Star"
+									size="sm"
+									variant="filled"
+								/>
 							</View>
 							<View style={styles.iconBtnGroup}>
 								<Text style={styles.iconBtnHint}>md</Text>
-								<IconButton icon={<Ionicons name="star-outline" size={18} color={colors.iconDefault} />} onPress={() => {}} accessibilityLabel="Star" size="md" variant="filled" />
+								<IconButton
+									icon={<Ionicons name="star-outline" size={18} color={colors.iconDefault} />}
+									onPress={() => {}}
+									accessibilityLabel="Star"
+									size="md"
+									variant="filled"
+								/>
 							</View>
 							<View style={styles.iconBtnGroup}>
 								<Text style={styles.iconBtnHint}>lg</Text>
-								<IconButton icon={<Ionicons name="star-outline" size={22} color={colors.iconDefault} />} onPress={() => {}} accessibilityLabel="Star" size="lg" variant="filled" />
+								<IconButton
+									icon={<Ionicons name="star-outline" size={22} color={colors.iconDefault} />}
+									onPress={() => {}}
+									accessibilityLabel="Star"
+									size="lg"
+									variant="filled"
+								/>
 							</View>
 						</Row>
 					</Block>
@@ -207,10 +254,19 @@ function ReviewContent() {
 						<Input placeholder="Placeholder..." />
 					</Block>
 					<Block label="label + hint">
-						<Input label="Email" hint="Nhập địa chỉ email của bạn" placeholder="hello@example.com" />
+						<Input
+							label="Email"
+							hint="Nhập địa chỉ email của bạn"
+							placeholder="hello@example.com"
+						/>
 					</Block>
 					<Block label="error">
-						<Input label="Mật khẩu" error="Mật khẩu phải có ít nhất 8 ký tự" placeholder="••••••••" secureTextEntry />
+						<Input
+							label="Mật khẩu"
+							error="Mật khẩu phải có ít nhất 8 ký tự"
+							placeholder="••••••••"
+							secureTextEntry
+						/>
 					</Block>
 					<Block label="icons">
 						<Input
@@ -235,7 +291,11 @@ function ReviewContent() {
 
 				<Section title="SearchBar">
 					<Block label="interactive (có clear button)">
-						<SearchBar value={searchText} onChangeText={setSearchText} placeholder="Tìm bài hát..." />
+						<SearchBar
+							value={searchText}
+							onChangeText={setSearchText}
+							placeholder="Tìm bài hát..."
+						/>
 					</Block>
 				</Section>
 
@@ -244,10 +304,21 @@ function ReviewContent() {
 						<ToggleSwitch value={toggleA} onValueChange={setToggleA} label="Thông báo" />
 					</Block>
 					<Block label="on + sublabel">
-						<ToggleSwitch value={toggleB} onValueChange={setToggleB} label="Dark Mode" sublabel="Giao diện tối giúp giảm mỏi mắt" />
+						<ToggleSwitch
+							value={toggleB}
+							onValueChange={setToggleB}
+							label="Dark Mode"
+							sublabel="Giao diện tối giúp giảm mỏi mắt"
+						/>
 					</Block>
 					<Block label="disabled">
-						<ToggleSwitch value={true} onValueChange={() => {}} label="Tính năng beta" sublabel="Đang phát triển" disabled />
+						<ToggleSwitch
+							value={true}
+							onValueChange={() => {}}
+							label="Tính năng beta"
+							sublabel="Đang phát triển"
+							disabled
+						/>
 					</Block>
 				</Section>
 
@@ -280,13 +351,19 @@ function ReviewContent() {
 				{/* ── DISPLAY ───────────────────────────────────────── */}
 				<Section title="Card">
 					<Block label="elevated (default)">
-						<Card><Text style={styles.cardText}>Elevated — có shadow</Text></Card>
+						<Card>
+							<Text style={styles.cardText}>Elevated — có shadow</Text>
+						</Card>
 					</Block>
 					<Block label="flat">
-						<Card variant="flat"><Text style={styles.cardText}>Flat — không shadow</Text></Card>
+						<Card variant="flat">
+							<Text style={styles.cardText}>Flat — không shadow</Text>
+						</Card>
 					</Block>
 					<Block label="bordered">
-						<Card variant="bordered"><Text style={styles.cardText}>Bordered — viền mảnh</Text></Card>
+						<Card variant="bordered">
+							<Text style={styles.cardText}>Bordered — viền mảnh</Text>
+						</Card>
 					</Block>
 					<Block label="padding={false}">
 						<Card padding={false} variant="bordered">
@@ -317,7 +394,9 @@ function ReviewContent() {
 						</Row>
 					</Block>
 					<Block label="pressable">
-						<Row><Badge label="Tap me ›" onPress={() => {}} /></Row>
+						<Row>
+							<Badge label="Tap me ›" onPress={() => {}} />
+						</Row>
 					</Block>
 				</Section>
 
@@ -347,9 +426,15 @@ function ReviewContent() {
 				</Section>
 
 				<Section title="ProgressBar">
-					<Block label="0%"><ProgressBar value={0} /></Block>
-					<Block label="30%"><ProgressBar value={30} /></Block>
-					<Block label="75% + showLabel"><ProgressBar value={75} showLabel /></Block>
+					<Block label="0%">
+						<ProgressBar value={0} />
+					</Block>
+					<Block label="30%">
+						<ProgressBar value={30} />
+					</Block>
+					<Block label="75% + showLabel">
+						<ProgressBar value={75} showLabel />
+					</Block>
 					<Block label="100% success color">
 						<ProgressBar value={100} color={colors.status.success} />
 					</Block>
@@ -363,7 +448,10 @@ function ReviewContent() {
 						<SectionHeader title="Nhật ký gần đây" />
 					</Block>
 					<Block label="with action">
-						<SectionHeader title="Gợi ý âm nhạc" action={{ label: "Xem tất cả", onPress: () => {} }} />
+						<SectionHeader
+							title="Gợi ý âm nhạc"
+							action={{ label: "Xem tất cả", onPress: () => {} }}
+						/>
 					</Block>
 				</Section>
 
@@ -378,7 +466,9 @@ function ReviewContent() {
 						<LoadingSpinner size="large" overlay={false} message="Đang phân tích cảm xúc..." />
 					</Block>
 					<Block label="overlay (full-screen) — không demo được trong scroll">
-						<Text style={styles.noteText}>Dùng &lt;LoadingSpinner /&gt; mặc định để hiển thị full-screen.</Text>
+						<Text style={styles.noteText}>
+							Dùng &lt;LoadingSpinner /&gt; mặc định để hiển thị full-screen.
+						</Text>
 					</Block>
 				</Section>
 
@@ -459,7 +549,10 @@ function ReviewContent() {
 					</Block>
 					<Block label="no icon, no action">
 						<Card variant="bordered">
-							<EmptyState title="Không tìm thấy kết quả" subtitle="Thử tìm kiếm với từ khoá khác." />
+							<EmptyState
+								title="Không tìm thấy kết quả"
+								subtitle="Thử tìm kiếm với từ khoá khác."
+							/>
 						</Card>
 					</Block>
 				</Section>
@@ -491,7 +584,10 @@ function ReviewContent() {
 				<Section title="Modal">
 					<Block label="slide-up với title + dismiss">
 						<Button title="Mở Modal" onPress={() => setModalVisible(true)} variant="outline" />
-						<Modal visible={modalVisible} onDismiss={() => setModalVisible(false)} title="Chi tiết nhật ký">
+						<Modal
+							visible={modalVisible}
+							onDismiss={() => setModalVisible(false)}
+							title="Chi tiết nhật ký">
 							<View style={styles.modalBody}>
 								<Text style={styles.modalText}>
 									Đây là nội dung bên trong Modal. Bấm vào vùng backdrop hoặc nút × để đóng.
@@ -505,7 +601,12 @@ function ReviewContent() {
 
 				<Section title="ConfirmationDialog">
 					<Block label="primary variant">
-						<Button title="Xác nhận hành động" onPress={() => setConfirmPrimary(true)} variant="outline" size="sm" />
+						<Button
+							title="Xác nhận hành động"
+							onPress={() => setConfirmPrimary(true)}
+							variant="outline"
+							size="sm"
+						/>
 						<ConfirmationDialog
 							visible={confirmPrimary}
 							title="Xác nhận hành động"
@@ -515,7 +616,12 @@ function ReviewContent() {
 						/>
 					</Block>
 					<Block label="danger variant">
-						<Button title="Xoá nhật ký" onPress={() => setConfirmDanger(true)} variant="danger" size="sm" />
+						<Button
+							title="Xoá nhật ký"
+							onPress={() => setConfirmDanger(true)}
+							variant="danger"
+							size="sm"
+						/>
 						<ConfirmationDialog
 							visible={confirmDanger}
 							title="Xoá nhật ký?"
@@ -552,7 +658,12 @@ function createStyles(colors: ThemeColors) {
 		content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 40 },
 
 		// Page header
-		pageHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 28 },
+		pageHeader: {
+			flexDirection: "row",
+			justifyContent: "space-between",
+			alignItems: "center",
+			marginBottom: 28,
+		},
 		pageTitle: { fontSize: 28, fontWeight: "800", color: colors.text.primary, marginBottom: 4 },
 		pageSubtitle: { fontSize: 14, color: colors.text.muted },
 

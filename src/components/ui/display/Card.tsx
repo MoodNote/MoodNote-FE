@@ -2,23 +2,14 @@ import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
-import { RADIUS, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
+import { RADIUS, SPACING } from "@/theme";
 import type { CardProps } from "@/types";
 
-export function Card({
-	children,
-	variant = "elevated",
-	padding,
-	style,
-	...rest
-}: CardProps) {
+export function Card({ children, variant = "elevated", padding, style, ...rest }: CardProps) {
 	const colors = useThemeColors();
 	const resolvedPadding = padding === false ? 0 : (padding ?? SPACING[16]);
-	const styles = useMemo(
-		() => createStyles(colors, resolvedPadding),
-		[colors, resolvedPadding],
-	);
+	const styles = useMemo(() => createStyles(colors, resolvedPadding), [colors, resolvedPadding]);
 
 	return (
 		<View style={[styles.base, styles[variant], style]} {...rest}>

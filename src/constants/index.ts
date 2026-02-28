@@ -51,6 +51,7 @@ export const ERROR_MESSAGES = {
 };
 
 export const ROUTES = {
+	SPLASH: "/(auth)/splash" as const,
 	ONBOARDING: "/(auth)/onboarding" as const,
 	WELCOME: "/(auth)/welcome" as const,
 	LOGIN: "/(auth)/login" as const,

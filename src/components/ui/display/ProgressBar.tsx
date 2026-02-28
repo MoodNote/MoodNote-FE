@@ -3,9 +3,8 @@ import { Animated, StyleSheet, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
 import { FONT_SIZE, SPACING } from "@/theme";
-import type { ThemeColors } from "@/theme";
-import { vs } from "@/utils";
 import type { ProgressBarProps } from "@/types";
+import { vs } from "@/utils";
 
 export function ProgressBar({
 	value,
@@ -48,9 +47,7 @@ export function ProgressBar({
 			<View style={styles.track}>
 				<Animated.View style={[styles.fill, { width: fillWidth }]} />
 			</View>
-			{showLabel === true && (
-				<Text style={styles.label}>{clamped}%</Text>
-			)}
+			{showLabel === true && <Text style={styles.label}>{clamped}%</Text>}
 		</View>
 	);
 }

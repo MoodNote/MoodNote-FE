@@ -38,6 +38,8 @@ module.exports = [
 			react: { version: "detect" },
 		},
 		rules: {
+			"react/jsx-max-props-per-line": ["error", { maximum: 1 }],
+
 			// TypeScript
 			"@typescript-eslint/no-explicit-any": "error",
 			"@typescript-eslint/no-unused-vars": [
@@ -47,8 +49,8 @@ module.exports = [
 			"@typescript-eslint/consistent-type-imports": ["warn", { prefer: "type-imports" }],
 
 			// React
-			"react/react-in-jsx-scope": "off", // React 17+ JSX transform
-			"react/prop-types": "off", // TypeScript handles this
+			"react/react-in-jsx-scope": "off",
+			"react/prop-types": "off",
 
 			// React Hooks
 			"react-hooks/rules-of-hooks": "error",

@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
 
 import { useThemeColors } from "@/hooks";
-import { FONT_SIZE, RADIUS, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
+import { FONT_SIZE, RADIUS, SPACING } from "@/theme";
 import type { SegmentedControlProps } from "@/types";
 import { s } from "@/utils";
 
@@ -25,9 +25,7 @@ export function SegmentedControl({ options, value, onChange }: SegmentedControlP
 						onPress={() => onChange(option.value)}
 						accessibilityRole="button"
 						accessibilityState={{ selected: isActive }}>
-						<Text style={[styles.label, isActive && styles.labelActive]}>
-							{option.label}
-						</Text>
+						<Text style={[styles.label, isActive && styles.labelActive]}>{option.label}</Text>
 					</Pressable>
 				);
 			})}

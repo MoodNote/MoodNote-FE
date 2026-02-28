@@ -1,11 +1,10 @@
 // FR-01: User registration
-import { Button, Input } from "@/components/ui";
 import { ScreenWrapper } from "@/components/layout";
+import { Button, Input } from "@/components/ui";
 import { ROUTES } from "@/constants";
-import { useAuth } from "@/hooks";
+import { useAuth, useThemeColors } from "@/hooks";
 import { useForm } from "@/hooks/useForm";
 import { registerSchema } from "@/schemas";
-import { useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -47,8 +46,7 @@ export default function RegisterScreen() {
 				style={styles.scroll}
 				contentContainerStyle={styles.scrollContent}
 				keyboardShouldPersistTaps="handled"
-				showsVerticalScrollIndicator={false}
-			>
+				showsVerticalScrollIndicator={false}>
 				{/* Heading */}
 				<Animated.View entering={FadeInDown.duration(400)} style={styles.heading}>
 					<Text style={styles.title}>Đăng kí</Text>
@@ -61,9 +59,7 @@ export default function RegisterScreen() {
 						placeholder="username"
 						autoCapitalize="none"
 						autoCorrect={false}
-						leftIcon={
-							<Feather name="user" size={18} color={colors.iconDefault} />
-						}
+						leftIcon={<Feather name="user" size={18} color={colors.iconDefault} />}
 						{...getFieldProps("username")}
 					/>
 
@@ -73,9 +69,7 @@ export default function RegisterScreen() {
 						keyboardType="email-address"
 						autoCapitalize="none"
 						autoCorrect={false}
-						leftIcon={
-							<Feather name="mail" size={18} color={colors.iconDefault} />
-						}
+						leftIcon={<Feather name="mail" size={18} color={colors.iconDefault} />}
 						{...getFieldProps("email")}
 					/>
 
@@ -85,16 +79,13 @@ export default function RegisterScreen() {
 						secureTextEntry={!passwordVisible}
 						autoCapitalize="none"
 						autoCorrect={false}
-						leftIcon={
-							<Feather name="lock" size={18} color={colors.iconDefault} />
-						}
+						leftIcon={<Feather name="lock" size={18} color={colors.iconDefault} />}
 						rightIcon={
 							<Pressable
 								onPress={togglePasswordVisible}
 								hitSlop={8}
 								accessibilityLabel={passwordVisible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-								accessibilityRole="button"
-							>
+								accessibilityRole="button">
 								<Feather
 									name={passwordVisible ? "eye-off" : "eye"}
 									size={18}
@@ -111,9 +102,7 @@ export default function RegisterScreen() {
 						secureTextEntry={!confirmPasswordVisible}
 						autoCapitalize="none"
 						autoCorrect={false}
-						leftIcon={
-							<Feather name="lock" size={18} color={colors.iconDefault} />
-						}
+						leftIcon={<Feather name="lock" size={18} color={colors.iconDefault} />}
 						rightIcon={
 							<Pressable
 								onPress={toggleConfirmPasswordVisible}
@@ -121,8 +110,7 @@ export default function RegisterScreen() {
 								accessibilityLabel={
 									confirmPasswordVisible ? "Ẩn mật khẩu xác nhận" : "Hiện mật khẩu xác nhận"
 								}
-								accessibilityRole="button"
-							>
+								accessibilityRole="button">
 								<Feather
 									name={confirmPasswordVisible ? "eye-off" : "eye"}
 									size={18}
@@ -161,8 +149,7 @@ export default function RegisterScreen() {
 						onPress={handleGoToLogin}
 						hitSlop={8}
 						accessibilityLabel="Đăng nhập vào tài khoản"
-						accessibilityRole="link"
-					>
+						accessibilityRole="link">
 						<Text style={styles.loginLink}>Đăng nhập</Text>
 					</Pressable>
 				</Animated.View>

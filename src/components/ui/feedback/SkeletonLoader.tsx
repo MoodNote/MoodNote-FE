@@ -40,13 +40,7 @@ export function SkeletonLoader({
 	});
 
 	return (
-		<Animated.View
-			style={[
-				styles.skeleton,
-				{ width, height, borderRadius, opacity },
-				style,
-			]}
-		/>
+		<Animated.View style={[styles.skeleton, { width, height, borderRadius, opacity }, style]} />
 	);
 }
 

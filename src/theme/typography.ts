@@ -26,10 +26,10 @@ export type FontSizeToken = keyof typeof FONT_SIZE;
 // ── Line heights ──────────────────────────────────────────────────────────────
 
 export const LINE_HEIGHT = {
-	tight:   18, // labels, buttons
-	normal:  20, // body, hints, subtitles
+	tight: 18, // labels, buttons
+	normal: 20, // body, hints, subtitles
 	relaxed: 22, // message bodies
-	loose:   26, // dialog messages
+	loose: 26, // dialog messages
 } as const;
 
 export type LineHeightToken = keyof typeof LINE_HEIGHT;

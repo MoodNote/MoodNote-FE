@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
-import { FONT_SIZE, LINE_HEIGHT, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
+import { FONT_SIZE, LINE_HEIGHT, SPACING } from "@/theme";
 import type { ConfirmationDialogProps } from "@/types";
 import { Button } from "../buttons/Button";
 import { Modal } from "./Modal";
@@ -28,20 +28,10 @@ export function ConfirmationDialog({
 				<Text style={styles.message}>{message}</Text>
 				<View style={styles.actions}>
 					<View style={styles.actionButton}>
-						<Button
-							title={cancelLabel}
-							onPress={onCancel}
-							variant="outline"
-							fullWidth
-						/>
+						<Button title={cancelLabel} onPress={onCancel} variant="outline" fullWidth />
 					</View>
 					<View style={styles.actionButton}>
-						<Button
-							title={confirmLabel}
-							onPress={onConfirm}
-							variant={confirmVariant}
-							fullWidth
-						/>
+						<Button title={confirmLabel} onPress={onConfirm} variant={confirmVariant} fullWidth />
 					</View>
 				</View>
 			</View>

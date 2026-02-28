@@ -9,8 +9,7 @@ export interface InputProps extends TextInputProps {
 	rightIcon?: ReactNode;
 }
 
-export interface TextAreaProps
-	extends Omit<TextInputProps, "multiline" | "textAlignVertical"> {
+export interface TextAreaProps extends Omit<TextInputProps, "multiline" | "textAlignVertical"> {
 	label?: string;
 	error?: string;
 	hint?: string;
