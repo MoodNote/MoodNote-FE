@@ -39,6 +39,7 @@ interface AuthContextValue extends AuthState {
 	resendVerification: (payload: ResendVerificationPayload) => Promise<void>;
 	verifyResetOtp: (payload: VerifyResetOtpPayload) => Promise<void>;
 	resetPassword: (payload: ResetPasswordPayload) => Promise<void>;
+	updateUser: (user: User) => Promise<void>;
 }
 
 // ─── Context ─────────────────────────────────────────────────────────────────
@@ -128,6 +129,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		await authService.resetPassword(payload);
 	}, []);
 
+	const updateUser = useCallback(async (user: User) => {
+		await setUserData(user);
+		setState((s) => ({ ...s, user }));
+	}, []);
+
 	return (
 		<AuthContext.Provider
 			value={{
@@ -140,6 +146,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 				resendVerification,
 				verifyResetOtp,
 				resetPassword,
+				updateUser,
 			}}>
 			{children}
 		</AuthContext.Provider>

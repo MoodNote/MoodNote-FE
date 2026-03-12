@@ -1,18 +1,19 @@
-import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { BlurView } from "expo-blur";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
 	useAnimatedStyle,
 	useSharedValue,
+	withSpring,
 	withTiming,
 } from "react-native-reanimated";
-import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useThemeColors } from "@/hooks";
-import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
+import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import { s, vs } from "@/utils";
 import { AddJournalMenu } from "./AddJournalMenu";
 
@@ -50,28 +51,73 @@ function TabItem({ label, routeName, isFocused, onPress, onLongPress, colors }: 
 
 	const itemStyles = useMemo(() => createItemStyles(colors), [colors]);
 
+	// 0 = inactive, 1 = active — drives icon scale + label fade
+	const progress = useSharedValue(isFocused ? 1 : 0);
+	// Press feedback
+	const pressScale = useSharedValue(1);
+
+	useEffect(() => {
+		progress.value = withSpring(isFocused ? 1 : 0, {
+			damping: 14,
+			stiffness: 180,
+			mass: 0.8,
+		});
+	}, [isFocused, progress]);
+
+	const iconAnimStyle = useAnimatedStyle(() => ({
+		transform: [{ scale: 0.88 + progress.value * 0.12 }],
+	}));
+
+	const labelAnimStyle = useAnimatedStyle(() => ({
+		opacity: withTiming(progress.value, { duration: 150 }),
+		transform: [{ translateY: (1 - progress.value) * 4 }],
+	}));
+
+	const pressAnimStyle = useAnimatedStyle(() => ({
+		transform: [{ scale: pressScale.value }],
+	}));
+
+	const handlePressIn = useCallback(() => {
+		pressScale.value = withTiming(0.85, { duration: 80 });
+	}, [pressScale]);
+
+	const handlePressOut = useCallback(() => {
+		pressScale.value = withSpring(1, { damping: 10, stiffness: 200 });
+	}, [pressScale]);
+
 	return (
 		<Pressable
-			style={itemStyles.container}
+			style={itemStyles.pressable}
 			onPress={onPress}
 			onLongPress={onLongPress}
+			onPressIn={handlePressIn}
+			onPressOut={handlePressOut}
 			accessibilityRole="tab"
 			accessibilityLabel={label}
 			accessibilityState={{ selected: isFocused }}
 			hitSlop={8}>
-			<Ionicons name={iconName} size={s(22)} color={iconColor} />
-			<Text style={[itemStyles.label, { color: labelColor }]}>{label}</Text>
+			<Animated.View style={[itemStyles.inner, pressAnimStyle]}>
+				<Animated.View style={iconAnimStyle}>
+					<Ionicons name={iconName} size={s(22)} color={iconColor} />
+				</Animated.View>
+				<Animated.Text style={[itemStyles.label, { color: labelColor }, labelAnimStyle]}>
+					{label}
+				</Animated.Text>
+			</Animated.View>
 		</Pressable>
 	);
 }
 
 function createItemStyles(colors: ThemeColors) {
 	return StyleSheet.create({
-		container: {
+		pressable: {
 			flex: 1,
 			alignItems: "center",
 			justifyContent: "center",
 			paddingVertical: SPACING[8],
+		},
+		inner: {
+			alignItems: "center",
 			gap: SPACING[4],
 		},
 		label: {

@@ -1,15 +1,19 @@
 import { Stack } from "expo-router";
 
+import { PublicRoute } from "@/components/navigation";
+
 export default function AuthLayout() {
 	return (
-		<Stack screenOptions={{ headerShown: false }}>
-			<Stack.Screen name="splash" options={{ animation: "fade" }} />
-			<Stack.Screen name="onboarding" options={{ animation: "fade" }} />
-			<Stack.Screen name="welcome" options={{ animation: "fade" }} />
-			<Stack.Screen name="login" options={{ animation: "slide_from_right" }} />
-			<Stack.Screen name="register" options={{ animation: "slide_from_right" }} />
-			<Stack.Screen name="verify-email" options={{ animation: "slide_from_right" }} />
-			<Stack.Screen name="forgot-password" options={{ animation: "slide_from_right" }} />
-		</Stack>
+		<PublicRoute>
+			<Stack screenOptions={{ headerShown: false }}>
+				<Stack.Screen name="splash" options={{ animation: "fade" }} />
+				<Stack.Screen name="onboarding" options={{ animation: "fade" }} />
+				<Stack.Screen name="welcome" options={{ animation: "fade" }} />
+				<Stack.Screen name="login" options={{ animation: "slide_from_right" }} />
+				<Stack.Screen name="register" options={{ animation: "slide_from_right" }} />
+				<Stack.Screen name="verify-email" options={{ animation: "slide_from_right" }} />
+				<Stack.Screen name="forgot-password" options={{ animation: "slide_from_right" }} />
+			</Stack>
+		</PublicRoute>
 	);
 }

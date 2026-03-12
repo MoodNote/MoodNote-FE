@@ -1,13 +1,19 @@
-// User and authentication types (FR-01 to FR-04)
+// User and authentication types (FR-01 to FR-05)
 
 export interface User {
 	id: string;
 	email: string;
 	username: string;
 	name: string;
+	isEmailVerified: boolean;
 	createdAt: string;
-	lastLogin: string;
-	isVerified: boolean;
+	updatedAt: string;
+}
+
+// FR-05: Profile update payload
+export interface UpdateProfilePayload {
+	name?: string;
+	username?: string;
 }
 
 export interface AuthTokens {
