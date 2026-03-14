@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 import { Avatar, Badge, Button, ToggleSwitch } from "@/components";
 import { Input } from "@/components/ui/inputs/Input";
 import { ROUTES } from "@/constants";
@@ -53,7 +52,8 @@ export default function ProfileScreen() {
 				showsVerticalScrollIndicator={false}
 				keyboardShouldPersistTaps="handled">
 				{/* Avatar + Info */}
-				<View style={styles.card}>
+				<View
+					style={styles.card}>
 					<View style={styles.header}>
 						<Avatar name={user.name} size="lg" />
 						<Text style={styles.displayName}>{user.name}</Text>
@@ -109,7 +109,8 @@ export default function ProfileScreen() {
 				</View>
 
 				{/* Theme toggle */}
-				<View style={styles.card}>
+				<View
+					style={styles.card}>
 					<ToggleSwitch
 						label="Dark Mode"
 						sublabel={isDark ? "Dark theme active" : "Light theme active"}
@@ -119,7 +120,8 @@ export default function ProfileScreen() {
 				</View>
 
 				{/* Logout */}
-				<View style={styles.card}>
+				<View
+					style={styles.card}>
 					<Button title="Log Out" variant="danger" fullWidth onPress={handleLogout} />
 				</View>
 			</ScrollView>

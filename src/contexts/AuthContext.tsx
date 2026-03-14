@@ -1,6 +1,7 @@
 import { AUTH_CONFIG } from "@/constants";
 import type { RegisterFormValues } from "@/schemas";
 import { authService } from "@/services/auth.service";
+import type { AuthContextValue } from "@/types/contexts.types";
 import type {
 	ForgotPasswordPayload,
 	LoginPayload,
@@ -22,24 +23,12 @@ import {
 } from "@/utils/storage";
 import { createContext, useCallback, useEffect, useState, type ReactNode } from "react";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Internal state ────────────────────────────────────────────────────────────
 
 interface AuthState {
 	user: User | null;
 	isAuthenticated: boolean;
 	isLoading: boolean;
-}
-
-interface AuthContextValue extends AuthState {
-	login: (payload: LoginPayload) => Promise<void>;
-	register: (formValues: RegisterFormValues) => Promise<void>;
-	logout: () => Promise<void>;
-	forgotPassword: (payload: ForgotPasswordPayload) => Promise<void>;
-	verifyEmail: (payload: VerifyEmailPayload) => Promise<void>;
-	resendVerification: (payload: ResendVerificationPayload) => Promise<void>;
-	verifyResetOtp: (payload: VerifyResetOtpPayload) => Promise<void>;
-	resetPassword: (payload: ResetPasswordPayload) => Promise<void>;
-	updateUser: (user: User) => Promise<void>;
 }
 
 // ─── Context ─────────────────────────────────────────────────────────────────

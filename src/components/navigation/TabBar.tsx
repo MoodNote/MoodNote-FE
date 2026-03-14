@@ -13,7 +13,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useThemeColors } from "@/hooks";
+import { useThemeColors, useThemeContext } from "@/hooks";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import { s, vs } from "@/utils";
@@ -142,6 +142,7 @@ function createItemStyles(colors: ThemeColors) {
 
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 	const colors = useThemeColors();
+	const { colorScheme } = useThemeContext();
 	const insets = useSafeAreaInsets();
 	const styles = useMemo(() => createStyles(colors, insets.bottom), [colors, insets.bottom]);
 
@@ -221,7 +222,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 			{/* Floating tab bar wrapper — positions bar above safe area */}
 			<View style={styles.wrapper} pointerEvents="box-none">
 				{/* BlurView for liquid glass effect */}
-				<BlurView intensity={50} tint="dark" style={styles.blurContainer}>
+				<BlurView intensity={60} tint={colorScheme === "dark" ? "dark" : "light"} style={styles.blurContainer}>
 					{/* Semi-transparent overlay for glass tint */}
 					<View style={styles.overlay}>
 						{/* Left tabs */}

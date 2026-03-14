@@ -1,35 +1,64 @@
-// FR-06, FR-09: Single entry state, update, and delete
+// FR-06, FR-09, NFR-04: Local-first single entry state, update, and delete
 
-import { useCallback, useEffect, useState } from "react";
-
+import {
+	getEntryById,
+	getEntryServerId,
+	hardDeleteEntry,
+	markEntryDeleted,
+	markUpdateSynced,
+	updateEntry as dbUpdateEntry,
+	upsertFromServer,
+} from "@/db";
 import { entryService } from "@/services";
-import type { Entry, UpdateEntryPayload } from "@/types/entry.types";
-import { parseError } from "@/utils";
-
-export interface UseEntryResult {
-	entry: Entry | null;
-	isLoading: boolean;
-	error: string | null;
-	/** Updates the entry via PATCH and refreshes local state from response */
-	updateEntry: (payload: UpdateEntryPayload) => Promise<Entry>;
-	/** Deletes the entry permanently. Throws on error for the caller to handle. */
-	deleteEntry: () => Promise<void>;
-}
+import type { Entry, UpdateEntryPayload, UseEntryResult } from "@/types/entry.types";
+import { logError, parseError } from "@/utils";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useSync } from "./useSync";
 
 export function useEntry(id: string): UseEntryResult {
+	const { isOnline } = useSync();
 	const [entry, setEntry] = useState<Entry | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
+	const isOnlineRef = useRef(isOnline);
+	useEffect(() => {
+		isOnlineRef.current = isOnline;
+	}, [isOnline]);
+
 	useEffect(() => {
 		let cancelled = false;
 
-		const fetch = async () => {
+		const load = async () => {
 			setIsLoading(true);
 			setError(null);
 			try {
-				const res = await entryService.getById(id);
-				if (!cancelled) setEntry(res.data.data.entry);
+				const local = await getEntryById(id);
+				if (!cancelled) {
+					if (local) {
+						setEntry(local);
+						// If content is a stub from list sync, fetch full content from server
+						if (!local.contentFetched && isOnlineRef.current) {
+							const serverId = await getEntryServerId(id);
+							if (serverId) {
+								try {
+									const res = await entryService.getById(serverId);
+									await upsertFromServer(res.data.data.entry);
+									const refreshed = await getEntryById(id);
+									if (!cancelled && refreshed) setEntry(refreshed);
+								} catch (fetchErr) {
+									logError(fetchErr, { context: "useEntry.fetchFullContent" });
+									// Non-fatal — continue showing stub content
+								}
+							}
+						}
+					} else if (isOnlineRef.current) {
+						const res = await entryService.getById(id);
+						if (!cancelled) setEntry(res.data.data.entry);
+					} else {
+						setError("Entry not found");
+					}
+				}
 			} catch (err) {
 				if (!cancelled) {
 					const { message } = parseError(err);
@@ -40,7 +69,7 @@ export function useEntry(id: string): UseEntryResult {
 			}
 		};
 
-		void fetch();
+		void load();
 
 		return () => {
 			cancelled = true;
@@ -49,16 +78,68 @@ export function useEntry(id: string): UseEntryResult {
 
 	const updateEntry = useCallback(
 		async (payload: UpdateEntryPayload): Promise<Entry> => {
-			const res = await entryService.update(id, payload);
-			const updated = res.data.data.entry;
+			const now = new Date().toISOString();
+
+			const contentJson = payload.content
+				? JSON.stringify(payload.content)
+				: undefined;
+			const tagsJson = payload.tags
+				? JSON.stringify(payload.tags)
+				: undefined;
+
+			let wordCount: number | undefined;
+			if (payload.content) {
+				const text = payload.content.ops
+					.map((op) => (typeof op.insert === "string" ? op.insert : ""))
+					.join("")
+					.trim();
+				wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
+			}
+
+			// 1. Write to local DB immediately
+			await dbUpdateEntry(id, {
+				title: payload.title !== undefined ? (payload.title ?? null) : undefined,
+				content: contentJson,
+				tags: tagsJson,
+				word_count: wordCount,
+				updated_at: now,
+			});
+
+			// 2. Read back updated entry
+			const updated = await getEntryById(id);
+			if (!updated) throw new Error("Entry not found after update");
 			setEntry(updated);
+
+			// 3. Background server sync if online
+			if (isOnlineRef.current) {
+				const serverId = await getEntryServerId(id);
+				if (serverId) {
+					entryService
+						.update(serverId, payload)
+						.then(() => markUpdateSynced(id))
+						.catch((err) => logError(err, { context: "useEntry.updateEntry server sync" }));
+				}
+			}
+
 			return updated;
 		},
 		[id],
 	);
 
 	const deleteEntry = useCallback(async () => {
-		await entryService.delete(id);
+		await markEntryDeleted(id);
+
+		if (isOnlineRef.current) {
+			const serverId = await getEntryServerId(id);
+			if (serverId) {
+				try {
+					await entryService.delete(serverId);
+					await hardDeleteEntry(id);
+				} catch (err) {
+					logError(err, { context: "useEntry.deleteEntry server delete" });
+				}
+			}
+		}
 	}, [id]);
 
 	return { entry, isLoading, error, updateEntry, deleteEntry };

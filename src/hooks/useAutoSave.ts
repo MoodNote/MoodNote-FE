@@ -2,22 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export type SaveStatus = "idle" | "saving" | "saved" | "error";
-
-export interface UseAutoSaveOptions {
-	/** Async function that performs the actual save. Wrap in useCallback in the calling component. */
-	saveFn: () => Promise<void>;
-	/** Debounce delay in milliseconds. Defaults to 7000ms (FR-06: 5–10s). */
-	delay?: number;
-}
-
-export interface UseAutoSaveResult {
-	saveStatus: SaveStatus;
-	/** Schedules a save after the debounce delay. Resets the timer if called again. */
-	triggerSave: () => void;
-	/** Cancels any pending debounce and saves immediately. */
-	triggerImmediately: () => Promise<void>;
-}
+import type { SaveStatus, UseAutoSaveOptions, UseAutoSaveResult } from "@/types/form.types";
 
 export function useAutoSave({ saveFn, delay = 7000 }: UseAutoSaveOptions): UseAutoSaveResult {
 	const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");

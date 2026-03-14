@@ -4,19 +4,9 @@ import { useColorScheme } from "react-native";
 import { THEME_STORAGE_KEY } from "@/constants";
 import { DARK_THEME } from "@/theme";
 import { LIGHT_THEME } from "@/theme/light";
-import type { ColorScheme, ThemeColors } from "@/theme/tokens";
+import type { ColorScheme } from "@/theme/tokens";
+import type { ThemeContextValue } from "@/types/contexts.types";
 import { getStorageItem, setStorageItem } from "@/utils/storage";
-
-// ─── Storage key ──────────────────────────────────────────────────────────────
-
-// ─── Context shape ────────────────────────────────────────────────────────────
-
-export interface ThemeContextValue {
-	colorScheme: ColorScheme;
-	colors: ThemeColors;
-	setTheme: (scheme: ColorScheme) => void;
-	toggleTheme: () => void;
-}
 
 // ─── Context ─────────────────────────────────────────────────────────────────
 

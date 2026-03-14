@@ -69,8 +69,8 @@ export const PALETTE = {
 
 	// ── Glass overlays (for liquid glass tab bar) ───────────────────
 	glass: {
-		dark: "rgba(21, 10, 46, 0.75)",    // purple[800] at 75% opacity
-		light: "rgba(255, 255, 255, 0.80)", // white at 80% opacity
+		dark: "rgba(21, 10, 46, 0.65)",    // purple[800] at 65% opacity — dark glass
+		light: "rgba(255, 255, 255, 0.88)", // white at 88% opacity — white glass
 	},
 
 	// ── Status Backgrounds ─────────────────────────────────────────

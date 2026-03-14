@@ -48,6 +48,10 @@ export interface EmptyStateProps {
 	};
 }
 
+export interface ToastContextValue {
+	show: (options: ToastOptions) => void;
+}
+
 export interface WavyLoaderProps {
 	/** Number of bars. Default: 5 */
 	barCount?: number;

@@ -18,7 +18,8 @@ type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 // Must match TabBar constants so the popup sits just above the FAB
 const FAB_SIZE = s(58);
 const BAR_HEIGHT = vs(64);
-const NOTCH_HEIGHT = vs(14);
+const NOTCH_W = FAB_SIZE;          // same width as FAB for organic connection
+const NOTCH_H = vs(18);            // taller for a more visible stem
 // Bottom edge of the popup (notch tip) aligns with the FAB top edge
 const POPUP_BOTTOM = BAR_HEIGHT + FAB_SIZE / 2 + vs(8);
 
@@ -123,7 +124,9 @@ export function AddJournalMenu({ visible, onDismiss }: AddJournalMenuProps) {
 					colors={colors}
 				/>
 			</View>
-			{/* Notch/tail pointing down toward FAB */}
+			{/* Notch/stem — flat top flushes with card bottom, pill bottom points toward FAB.
+			    Card's rounded bottom-left/right corners form natural concave "ear" curves
+			    on either side of the notch junction. */}
 			<View style={styles.notch} />
 		</Animated.View>
 	);
@@ -150,11 +153,16 @@ function createStyles(colors: ThemeColors) {
 			elevation: 16,
 		},
 		notch: {
-			width: s(22),
-			height: NOTCH_HEIGHT,
+			width: NOTCH_W,
+			height: NOTCH_H,
 			backgroundColor: colors.brand.primary,
-			borderBottomLeftRadius: RADIUS.sm,
-			borderBottomRightRadius: RADIUS.sm,
+			// Flat top — connects flush with card bottom so card's rounded corners
+			// form natural concave "ear" curves on either side
+			borderTopLeftRadius: 0,
+			borderTopRightRadius: 0,
+			// Pill bottom — smooth rounded tip pointing toward FAB
+			borderBottomLeftRadius: NOTCH_H / 2,
+			borderBottomRightRadius: NOTCH_H / 2,
 		},
 		divider: {
 			height: 1,

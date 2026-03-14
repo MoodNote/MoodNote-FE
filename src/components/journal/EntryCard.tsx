@@ -1,13 +1,19 @@
 // FR-06, FR-08: Reusable journal entry card for the list screen
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import Animated, {
+	useAnimatedStyle,
+	useSharedValue,
+	withSpring,
+} from "react-native-reanimated";
 
 import { useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import type { EntryListItem } from "@/types/entry.types";
 import { s, vs } from "@/utils";
+import { Ionicons } from "@expo/vector-icons";
 import { Badge } from "../ui/display/Badge";
 import { Card } from "../ui/display/Card";
 
@@ -37,6 +43,20 @@ export function EntryCard({ entry, onPress }: Props) {
 	const colors = useThemeColors();
 	const styles = useMemo(() => createStyles(colors), [colors]);
 
+	// Subtle press scale feedback
+	const scale = useSharedValue(1);
+	const pressStyle = useAnimatedStyle(() => ({
+		transform: [{ scale: scale.value }],
+	}));
+
+	const handlePressIn = useCallback(() => {
+		scale.value = withSpring(0.97, { damping: 20, stiffness: 400, mass: 0.8 });
+	}, [scale]);
+
+	const handlePressOut = useCallback(() => {
+		scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+	}, [scale]);
+
 	const statusColor = useMemo(() => {
 		switch (entry.analysisStatus) {
 			case "PROCESSING":
@@ -51,52 +71,69 @@ export function EntryCard({ entry, onPress }: Props) {
 	}, [entry.analysisStatus, colors]);
 
 	return (
-		<Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={entry.title ?? "Nhật ký"}>
-			<Card variant="elevated" padding={SPACING[16]}>
-				{/* Header row: date + word count */}
-				<View style={styles.headerRow}>
-					<Text style={styles.date}>{formatEntryDate(entry.entryDate)}</Text>
-					<Badge
-						label={`${entry.wordCount} từ`}
-						size="sm"
-						color={colors.background.elevated}
-						textColor={colors.text.muted}
-					/>
-				</View>
+		<Pressable
+			onPress={onPress}
+			onPressIn={handlePressIn}
+			onPressOut={handlePressOut}
+			accessibilityRole="button"
+			accessibilityLabel={entry.title ?? "Nhật ký"}>
+			<Animated.View style={pressStyle}>
+				<Card variant="elevated" padding={SPACING[16]}>
+					{/* Header row: date + offline icon + word count */}
+					<View style={styles.headerRow}>
+						<View style={styles.dateRow}>
+							<Text style={styles.date}>{formatEntryDate(entry.entryDate)}</Text>
+							{entry.isOffline && (
+								<Ionicons
+									name="cloud-offline-outline"
+									size={s(12)}
+									color={colors.status.warning}
+									accessibilityLabel="Chưa đồng bộ"
+								/>
+							)}
+						</View>
+						<Badge
+							label={`${entry.wordCount} từ`}
+							size="sm"
+							color={colors.background.elevated}
+							textColor={colors.text.muted}
+						/>
+					</View>
 
-				{/* Title */}
-				{entry.title != null && entry.title.length > 0 && (
-					<Text style={styles.title} numberOfLines={1}>
-						{entry.title}
+					{/* Title */}
+					{entry.title != null && entry.title.length > 0 && (
+						<Text style={styles.title} numberOfLines={1}>
+							{entry.title}
+						</Text>
+					)}
+
+					{/* Preview */}
+					<Text style={styles.preview} numberOfLines={2}>
+						{entry.preview}
 					</Text>
-				)}
 
-				{/* Preview */}
-				<Text style={styles.preview} numberOfLines={2}>
-					{entry.preview}
-				</Text>
+					{/* Tags */}
+					{entry.tags.length > 0 && (
+						<ScrollView
+							horizontal
+							showsHorizontalScrollIndicator={false}
+							style={styles.tagsScroll}
+							contentContainerStyle={styles.tagsContent}>
+							{entry.tags.map((tag) => (
+								<Badge key={tag} label={`#${tag}`} size="sm" />
+							))}
+						</ScrollView>
+					)}
 
-				{/* Tags */}
-				{entry.tags.length > 0 && (
-					<ScrollView
-						horizontal
-						showsHorizontalScrollIndicator={false}
-						style={styles.tagsScroll}
-						contentContainerStyle={styles.tagsContent}>
-						{entry.tags.map((tag) => (
-							<Badge key={tag} label={`#${tag}`} size="sm" />
-						))}
-					</ScrollView>
-				)}
-
-				{/* Analysis status */}
-				<View style={styles.statusRow}>
-					<View style={[styles.statusDot, { backgroundColor: statusColor }]} />
-					<Text style={[styles.statusText, { color: statusColor }]}>
-						{ANALYSIS_STATUS_LABELS[entry.analysisStatus] ?? entry.analysisStatus}
-					</Text>
-				</View>
-			</Card>
+					{/* Analysis status */}
+					<View style={styles.statusRow}>
+						<View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+						<Text style={[styles.statusText, { color: statusColor }]}>
+							{ANALYSIS_STATUS_LABELS[entry.analysisStatus] ?? entry.analysisStatus}
+						</Text>
+					</View>
+				</Card>
+			</Animated.View>
 		</Pressable>
 	);
 }
@@ -108,6 +145,11 @@ function createStyles(colors: ThemeColors) {
 			justifyContent: "space-between",
 			alignItems: "center",
 			marginBottom: SPACING[8],
+		},
+		dateRow: {
+			flexDirection: "row",
+			alignItems: "center",
+			gap: s(4),
 		},
 		date: {
 			fontSize: FONT_SIZE[12],

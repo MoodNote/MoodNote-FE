@@ -2,7 +2,7 @@
 
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	ActivityIndicator,
 	Alert,
@@ -15,15 +15,25 @@ import {
 	TextInput,
 	View,
 } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 
 import { Badge } from "@/components/ui/display/Badge";
 import { Button } from "@/components/ui/buttons/Button";
 import { RichTextEditor } from "@/components/journal";
 import type { RichTextEditorRef } from "@/components/journal";
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
-import { useAutoSave, useForm, useThemeColors } from "@/hooks";
+import {
+	insertEntry,
+	markSynced,
+	markUpdateSynced,
+	updateEntry as dbUpdateEntry,
+	getEntryServerId,
+} from "@/db";
+import { useAutoSave, useForm, useSync, useThemeColors } from "@/hooks";
 import { entryService } from "@/services";
+import { logError } from "@/utils/error";
 import { createEntryFormSchema } from "@/schemas/entry.schemas";
+import { randomUUID } from "expo-crypto";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import { s, vs, htmlToText } from "@/utils";
@@ -32,8 +42,13 @@ import type { QuillDelta } from "@/types/entry.types";
 export default function CreateEntryScreen() {
 	const colors = useThemeColors();
 	const styles = useMemo(() => createStyles(colors), [colors]);
+	const { isOnline } = useSync();
+	const isOnlineRef = useRef(isOnline);
+	useEffect(() => {
+		isOnlineRef.current = isOnline;
+	}, [isOnline]);
 
-	// Tracks the entry ID after first successful POST — null = not yet created
+	// Tracks the local entry ID after first save — null = not yet created
 	const entryIdRef = useRef<string | null>(null);
 	const [tagInput, setTagInput] = useState("");
 	const [contentDirty, setContentDirty] = useState(false);
@@ -55,27 +70,82 @@ export default function CreateEntryScreen() {
 
 	const saveFn = useCallback(async () => {
 		const html = (await editorRef.current?.getContentHtml()) ?? "";
-		if (htmlToText(html).length < 10) return; // don't save if too short
+		if (htmlToText(html).length < 10) return;
 
 		const title = watch("title") ?? "";
 		const tags = watch("tags") ?? [];
 		const today = new Date().toISOString().split("T")[0];
+		const now = new Date().toISOString();
+
+		const text = deltaRef.current.ops
+			.map((op) => (typeof op.insert === "string" ? op.insert : ""))
+			.join("")
+			.trim();
+		const wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
 
 		if (entryIdRef.current === null) {
-			const res = await entryService.create({
-				content: deltaRef.current,
+			// First save — write to local DB immediately (NFR-04)
+			const localId = randomUUID();
+			await insertEntry({
+				local_id: localId,
 				title: title.trim() || undefined,
-				tags,
-				entryDate: today,
-				inputMethod: "TEXT",
+				content: JSON.stringify(deltaRef.current),
+				entry_date: today,
+				input_method: "TEXT",
+				tags: JSON.stringify(tags),
+				word_count: wordCount,
+				is_private: 0,
+				analysis_status: "PENDING",
+				sync_status: "pending_create",
+				created_at: now,
+				updated_at: now,
 			});
-			entryIdRef.current = res.data.data.entry.id;
+			entryIdRef.current = localId;
+
+			// Background server create if online
+			if (isOnlineRef.current) {
+				try {
+					const res = await entryService.create({
+						content: deltaRef.current,
+						title: title.trim() || undefined,
+						tags,
+						entryDate: today,
+						inputMethod: "TEXT",
+					});
+					await markSynced(
+						localId,
+						res.data.data.entry.id,
+						res.data.data.entry.analysisStatus,
+					);
+				} catch (err) {
+					logError(err, { context: "create.tsx saveFn server create" });
+				}
+			}
 		} else {
-			await entryService.update(entryIdRef.current, {
-				content: deltaRef.current,
-				title: title.trim() || undefined,
-				tags,
+			// Subsequent save — update local DB immediately
+			await dbUpdateEntry(entryIdRef.current, {
+				title: title.trim() || null,
+				content: JSON.stringify(deltaRef.current),
+				tags: JSON.stringify(tags),
+				word_count: wordCount,
+				updated_at: now,
 			});
+
+			// Background server update if online
+			if (isOnlineRef.current) {
+				const serverId = await getEntryServerId(entryIdRef.current);
+				if (serverId) {
+					const currentId = entryIdRef.current;
+					entryService
+						.update(serverId, {
+							content: deltaRef.current,
+							title: title.trim() || undefined,
+							tags,
+						})
+						.then(() => markUpdateSynced(currentId))
+						.catch((err) => logError(err, { context: "create.tsx saveFn server update" }));
+				}
+			}
 		}
 	}, [watch]);
 
@@ -124,31 +194,40 @@ export default function CreateEntryScreen() {
 		}
 	}, [formState.isDirty, contentDirty, saveStatus]);
 
-	// ── Save status indicator ─────────────────────────────────────────────────
+	// ── Save status indicator (animated fade between states) ─────────────────
 
 	const SaveIndicator = useMemo(() => {
 		if (saveStatus === "saving") {
 			return (
-				<View style={styles.saveIndicator}>
+				<Animated.View
+					key="saving"
+					entering={FadeIn.duration(200)}
+					style={styles.saveIndicator}>
 					<ActivityIndicator size="small" color={colors.text.muted} />
 					<Text style={styles.saveText}>Đang lưu...</Text>
-				</View>
+				</Animated.View>
 			);
 		}
 		if (saveStatus === "saved") {
 			return (
-				<View style={styles.saveIndicator}>
+				<Animated.View
+					key="saved"
+					entering={FadeIn.duration(200)}
+					style={styles.saveIndicator}>
 					<Ionicons name="checkmark-circle" size={s(16)} color={colors.status.success} />
 					<Text style={[styles.saveText, { color: colors.status.success }]}>Đã lưu</Text>
-				</View>
+				</Animated.View>
 			);
 		}
 		if (saveStatus === "error") {
 			return (
-				<View style={styles.saveIndicator}>
+				<Animated.View
+					key="error"
+					entering={FadeIn.duration(200)}
+					style={styles.saveIndicator}>
 					<Ionicons name="alert-circle" size={s(16)} color={colors.status.error} />
 					<Text style={[styles.saveText, { color: colors.status.error }]}>Lỗi lưu</Text>
-				</View>
+				</Animated.View>
 			);
 		}
 		return null;

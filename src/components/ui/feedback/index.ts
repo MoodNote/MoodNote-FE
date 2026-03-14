@@ -4,3 +4,4 @@ export { ToastProvider, useToast } from "./Toast";
 export { StatusIndicator } from "./StatusIndicator";
 export { EmptyState } from "./EmptyState";
 export { WavyLoader } from "./WavyLoader";
+export { NetworkBanner } from "./NetworkBanner";

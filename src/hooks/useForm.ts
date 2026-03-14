@@ -4,44 +4,12 @@ import {
 	type FieldValues,
 	type Path,
 	type Resolver,
-	type SubmitErrorHandler,
 	type SubmitHandler,
-	type UseFormProps,
-	type UseFormReturn,
 	useForm as useRHForm,
 } from "react-hook-form";
 import type { ZodType } from "zod";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export interface UseFormOptions<TValues extends FieldValues> extends Omit<
-	UseFormProps<TValues>,
-	"resolver"
-> {
-	/** Zod schema to validate the form */
-	schema: ZodType<TValues>;
-	/** Called after successful validation */
-	onSubmit: SubmitHandler<TValues>;
-	/** Called when validation fails (optional) */
-	onError?: SubmitErrorHandler<TValues>;
-}
-
-export interface UseFormResult<TValues extends FieldValues> extends UseFormReturn<TValues> {
-	/** Whether async onSubmit is running */
-	isSubmitting: boolean;
-	/** Server/API error message, if any */
-	serverError: string | null;
-	/** Set a server-side error manually (e.g. from API response) */
-	setServerError: (message: string | null) => void;
-	/** Pre-bound handleSubmit that feeds onSubmit/onError */
-	submitForm: () => void;
-	/** Shorthand: register + retrieve error message for a field */
-	getFieldProps: (name: Path<TValues>) => {
-		value: string;
-		onChangeText: (text: string) => void;
-		error?: string;
-	};
-}
+import type { UseFormOptions, UseFormResult } from "@/types/form.types";
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 

@@ -12,13 +12,9 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
-import type { ToastOptions, ToastProviderProps, ToastType } from "@/types";
+import type { ToastContextValue, ToastOptions, ToastProviderProps, ToastType } from "@/types";
 
 // ─── Internal types ────────────────────────────────────────────────────────────
-
-interface ToastContextValue {
-	show: (options: ToastOptions) => void;
-}
 
 interface ToastState extends Required<ToastOptions> {
 	id: string;

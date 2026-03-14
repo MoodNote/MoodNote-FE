@@ -21,7 +21,6 @@ import { EmptyState } from "@/components/ui/feedback/EmptyState";
 import { JournalIllustration } from "@/components/ui/illustrations/JournalIllustration";
 import { ROUTES } from "@/constants";
 import { useEntries, useThemeColors } from "@/hooks";
-import { entryService } from "@/services";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import type { EntryListItem } from "@/types/entry.types";
@@ -132,14 +131,7 @@ export default function JournalScreen() {
 					{
 						text: "Xoá",
 						style: "destructive",
-						onPress: async () => {
-							try {
-								await entryService.delete(item.id);
-								removeEntry(item.id);
-							} catch {
-								Alert.alert("Lỗi", "Không thể xoá nhật ký. Vui lòng thử lại.");
-							}
-						},
+						onPress: () => void removeEntry(item.id),
 					},
 				],
 			);
@@ -149,24 +141,26 @@ export default function JournalScreen() {
 
 	const renderItem = useCallback(
 		({ item }: { item: EntryListItem }) => (
-			<ReanimatedSwipeable
-				renderRightActions={(progress, drag, swipeable) => (
-					<SwipeDeleteAction
-						progress={progress}
-						drag={drag}
-						swipeable={swipeable}
-						onPress={() => handleDelete(item)}
-						onAutoDelete={() => handleDelete(item)}
+			<View>
+				<ReanimatedSwipeable
+					renderRightActions={(progress, drag, swipeable) => (
+						<SwipeDeleteAction
+							progress={progress}
+							drag={drag}
+							swipeable={swipeable}
+							onPress={() => handleDelete(item)}
+							onAutoDelete={() => handleDelete(item)}
+						/>
+					)}
+					rightThreshold={SWIPE_ACTION_WIDTH * 0.8}
+					overshootFriction={6}
+					friction={1.5}>
+					<EntryCard
+						entry={item}
+						onPress={() => router.push(ROUTES.JOURNAL_DETAIL(item.id))}
 					/>
-				)}
-				rightThreshold={SWIPE_ACTION_WIDTH * 0.8}
-				overshootFriction={6}
-				friction={1.5}>
-				<EntryCard
-					entry={item}
-					onPress={() => router.push(ROUTES.JOURNAL_DETAIL(item.id))}
-				/>
-			</ReanimatedSwipeable>
+				</ReanimatedSwipeable>
+			</View>
 		),
 		[handleDelete],
 	);
@@ -188,41 +182,46 @@ export default function JournalScreen() {
 
 	return (
 		<ScreenWrapper padded={false}>
-			{/* Header */}
-			<View style={styles.header}>
-				<Text style={styles.headerTitle}>Nhật ký</Text>
-				<Pressable
-					onPress={() => router.push(ROUTES.JOURNAL_CREATE)}
-					style={styles.addButton}
-					accessibilityLabel="Viết nhật ký mới"
-					accessibilityRole="button"
-					hitSlop={8}>
-					<Ionicons name="add" size={s(26)} color={colors.brand.primary} />
-				</Pressable>
-			</View>
+			<View style={styles.flex}>
+				{/* Header */}
+				<View style={styles.header}>
+					<Text style={styles.headerTitle}>Nhật ký</Text>
+					<Pressable
+						onPress={() => router.push(ROUTES.JOURNAL_CREATE)}
+						style={styles.addButton}
+						accessibilityLabel="Viết nhật ký mới"
+						accessibilityRole="button"
+						hitSlop={8}>
+						<Ionicons name="add" size={s(26)} color={colors.brand.primary} />
+					</Pressable>
+				</View>
 
-			{/* List */}
-			<FlatList
-				data={entries}
-				keyExtractor={(item) => item.id}
-				renderItem={renderItem}
-				ListEmptyComponent={isLoading ? null : ListEmpty}
-				onRefresh={refresh}
-				refreshing={isRefreshing}
-				onEndReached={loadMore}
-				onEndReachedThreshold={0.4}
-				contentContainerStyle={[
-					styles.listContent,
-					entries.length === 0 && !isLoading && styles.listContentEmpty,
-				]}
-				showsVerticalScrollIndicator={false}
-			/>
+				{/* List */}
+				<FlatList
+					data={entries}
+					keyExtractor={(item) => item.id}
+					renderItem={renderItem}
+					ListEmptyComponent={isLoading ? null : ListEmpty}
+					onRefresh={refresh}
+					refreshing={isRefreshing}
+					onEndReached={loadMore}
+					onEndReachedThreshold={0.4}
+					contentContainerStyle={[
+						styles.listContent,
+						entries.length === 0 && !isLoading && styles.listContentEmpty,
+					]}
+					showsVerticalScrollIndicator={false}
+				/>
+			</View>
 		</ScreenWrapper>
 	);
 }
 
 function createStyles(colors: ThemeColors) {
 	return StyleSheet.create({
+		flex: {
+			flex: 1,
+		},
 		header: {
 			flexDirection: "row",
 			justifyContent: "space-between",

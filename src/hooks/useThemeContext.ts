@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { ThemeContext } from "@/contexts/ThemeContext";
-import type { ThemeContextValue } from "@/contexts/ThemeContext";
+import type { ThemeContextValue } from "@/types/contexts.types";
 
 /**
  * Access the full theme context: colorScheme, colors, setTheme, toggleTheme.
