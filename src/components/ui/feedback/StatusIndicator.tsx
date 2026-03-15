@@ -6,14 +6,7 @@ import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, SPACING } from "@/theme";
 import type { StatusIndicatorProps, StatusIndicatorStatus } from "@/types";
 import { s } from "@/utils";
-
-const LABEL_MAP: Record<StatusIndicatorStatus, string> = {
-	saving: "Đang lưu...",
-	saved: "Đã lưu",
-	error: "Lỗi lưu",
-	online: "Online",
-	offline: "Offline",
-};
+import { STATUS_INDICATOR_LABELS } from "@/constants";
 
 export function StatusIndicator({ status, showLabel = true }: StatusIndicatorProps) {
 	const colors = useThemeColors();
@@ -50,7 +43,7 @@ export function StatusIndicator({ status, showLabel = true }: StatusIndicatorPro
 	return (
 		<View style={styles.row}>
 			<Animated.View style={[styles.dot, { backgroundColor: dotColor, opacity: pulseAnim }]} />
-			{showLabel && <Text style={styles.label}>{LABEL_MAP[status]}</Text>}
+			{showLabel && <Text style={styles.label}>{STATUS_INDICATOR_LABELS[status]}</Text>}
 		</View>
 	);
 }

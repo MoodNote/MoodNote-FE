@@ -4,70 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { type ReactNode } from "react";
 import { KeyboardAvoidingView, Platform, StyleSheet, View, type ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-// ── Ambient glow blobs ────────────────────────────────────────────────────────
-// Simulate Gaussian blur via layered concentric circles with low opacity.
-// Each layer is a sibling View — opacities add up at the center, creating a
-// smooth radial falloff that approximates a soft glow.
-
-const BLOB_LAYERS = Array.from({ length: 24 }, (_, i) => {
-	const t = i / 23; // 0 → 1
-	const factor = 1 - t * 0.92; // từ 1 → ~0.08
-
-	// opacity tăng rồi giảm (parabolic)
-	const opacity = (0.03 + Math.sin(t * Math.PI) * 0.04) * 0.3;
-
-	return {
-		factor: Number(factor.toFixed(2)),
-		opacity: Number(opacity.toFixed(3)),
-	};
-});
-// Cumulative at center ≈ 0.60; at outer edge ≈ 0.03
-
-interface BlobProps {
-	color: string;
-	radius: number;
-	top?: number;
-	bottom?: number;
-	left?: number;
-	right?: number;
-}
-
-function Blob({ color, radius, top, bottom, left, right }: BlobProps) {
-	const size = radius * 2;
-	return (
-		<View
-			pointerEvents="none"
-			style={{
-				position: "absolute",
-				top,
-				bottom,
-				left,
-				right,
-				width: size,
-				height: size,
-				alignItems: "center",
-				justifyContent: "center",
-			}}>
-			{BLOB_LAYERS.map(({ factor, opacity }, i) => {
-				const r = radius * factor;
-				return (
-					<View
-						key={i}
-						style={{
-							position: "absolute",
-							width: r * 2,
-							height: r * 2,
-							borderRadius: r,
-							backgroundColor: color,
-							opacity,
-						}}
-					/>
-				);
-			})}
-		</View>
-	);
-}
+import { Blob } from "./Blob";
 
 // ── ScreenWrapper ─────────────────────────────────────────────────────────────
 

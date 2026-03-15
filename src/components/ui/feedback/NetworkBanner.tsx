@@ -3,7 +3,7 @@
 import { useSync, useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, SPACING } from "@/theme";
-import { vs } from "@/utils";
+import { BANNER_HEIGHT } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useMemo } from "react";
 import { StyleSheet, Text } from "react-native";
@@ -12,8 +12,6 @@ import Animated, {
 	useSharedValue,
 	withTiming,
 } from "react-native-reanimated";
-
-const BANNER_HEIGHT = vs(36);
 
 export function NetworkBanner() {
 	const { isOnline, isSyncing } = useSync();

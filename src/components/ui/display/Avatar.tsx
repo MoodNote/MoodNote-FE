@@ -3,18 +3,14 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
-import { FONT_SIZE, SIZE } from "@/theme";
 import type { AvatarProps } from "@/types";
-import { s } from "@/utils";
-
-const SIZE_MAP = { sm: SIZE.xs, md: SIZE.md, lg: SIZE["2xl"] } as const;
-const FONT_MAP = { sm: FONT_SIZE[12], md: s(16), lg: FONT_SIZE[22] } as const;
+import { AVATAR_FONT_MAP, AVATAR_SIZE_MAP } from "@/constants";
 
 export function Avatar({ uri, name, size = "md", onPress }: AvatarProps) {
 	const colors = useThemeColors();
 	const [imageError, setImageError] = useState(false);
-	const dimension = SIZE_MAP[size];
-	const fontSize = FONT_MAP[size];
+	const dimension = AVATAR_SIZE_MAP[size];
+	const fontSize = AVATAR_FONT_MAP[size];
 	const styles = useMemo(
 		() => createStyles(colors, dimension, fontSize),
 		[colors, dimension, fontSize],

@@ -1,6 +1,6 @@
 // FR-06: Rich text editor component wrapping react-native-pell-rich-editor
 
-import { RichEditor, RichToolbar, actions } from "react-native-pell-rich-editor";
+import { RichEditor, RichToolbar } from "react-native-pell-rich-editor";
 import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from "react";
 import { StyleSheet, View } from "react-native";
 
@@ -8,10 +8,11 @@ import { useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
 import { RADIUS, SPACING } from "@/theme";
 import { vs } from "@/utils";
+import { TOOLBAR_ACTIONS } from "@/constants";
 import { deltaToHtml, htmlToDelta } from "@/utils";
 import type { QuillDelta } from "@/types/entry.types";
 
-export interface RichTextEditorProps {
+interface Props {
 	/** Existing Delta content to display (detail/edit screen) */
 	initialDelta?: QuillDelta;
 	/** Called whenever content changes — receives the latest Delta */
@@ -28,16 +29,7 @@ export interface RichTextEditorRef {
 	getContentHtml: () => Promise<string>;
 }
 
-const TOOLBAR_ACTIONS = [
-	actions.heading1,
-	actions.heading2,
-	actions.setBold,
-	actions.setItalic,
-	actions.insertBulletsList,
-	actions.insertOrderedList,
-];
-
-export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>(
+export const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
 	function RichTextEditor(
 		{ initialDelta, onChange, onBlur, minHeight = vs(300), placeholder = "" },
 		ref,

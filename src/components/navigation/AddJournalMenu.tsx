@@ -1,6 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Animated, {
 	Easing,
 	useAnimatedStyle,
@@ -9,75 +8,15 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { useThemeColors } from "@/hooks";
-import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
+import { RADIUS, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
 import { s, vs } from "@/utils";
-
-type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
-
-// Must match TabBar constants so the popup sits just above the FAB
-const FAB_SIZE = s(58);
-const BAR_HEIGHT = vs(64);
-const NOTCH_W = FAB_SIZE;          // same width as FAB for organic connection
-const NOTCH_H = vs(18);            // taller for a more visible stem
-// Bottom edge of the popup (notch tip) aligns with the FAB top edge
-const POPUP_BOTTOM = BAR_HEIGHT + FAB_SIZE / 2 + vs(8);
+import { NOTCH_H, NOTCH_W, POPUP_BOTTOM } from "@/constants";
+import { MenuOption } from "./MenuOption";
 
 interface AddJournalMenuProps {
 	visible: boolean;
 	onDismiss: () => void;
-}
-
-interface MenuOptionProps {
-	iconName: IoniconName;
-	label: string;
-	onPress: () => void;
-	colors: ThemeColors;
-}
-
-function MenuOption({ iconName, label, onPress, colors }: MenuOptionProps) {
-	const styles = useMemo(() => createOptionStyles(colors), [colors]);
-	return (
-		<Pressable
-			style={({ pressed }) => [styles.option, pressed && styles.optionPressed]}
-			onPress={onPress}
-			accessibilityRole="button"
-			accessibilityLabel={label}>
-			<Text style={styles.label}>{label}</Text>
-			<View style={styles.iconWrap}>
-				<Ionicons name={iconName} size={s(20)} color={colors.brand.onPrimary} />
-			</View>
-		</Pressable>
-	);
-}
-
-function createOptionStyles(colors: ThemeColors) {
-	return StyleSheet.create({
-		option: {
-			flexDirection: "row",
-			alignItems: "center",
-			justifyContent: "space-between",
-			paddingVertical: SPACING[14],
-			paddingHorizontal: SPACING[20],
-		},
-		optionPressed: {
-			backgroundColor: colors.brand.primaryPressed,
-		},
-		iconWrap: {
-			width: s(40),
-			height: s(40),
-			borderRadius: RADIUS.md,
-			backgroundColor: colors.brand.primaryPressed,
-			alignItems: "center",
-			justifyContent: "center",
-		},
-		label: {
-			fontSize: FONT_SIZE[15],
-			lineHeight: LINE_HEIGHT.normal,
-			color: colors.brand.onPrimary,
-			fontWeight: "500",
-		},
-	});
 }
 
 export function AddJournalMenu({ visible, onDismiss }: AddJournalMenuProps) {

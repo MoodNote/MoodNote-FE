@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
 import type { ToastContextValue, ToastOptions, ToastProviderProps, ToastType } from "@/types";
+import { TOAST_ICON_COLOR_KEY, TOAST_ICON_MAP } from "@/constants";
 
 // ─── Internal types ────────────────────────────────────────────────────────────
 
@@ -89,9 +90,9 @@ export function ToastProvider({ children }: ToastProviderProps) {
 
 	const contextValue = useMemo(() => ({ show }), [show]);
 
-	const iconName = toast != null ? ICON_MAP[toast.type] : "information-circle";
+	const iconName = toast != null ? TOAST_ICON_MAP[toast.type] : "information-circle";
 	const toastStyle = toast != null ? styles[toast.type] : undefined;
-	const iconColor = toast != null ? ICON_COLOR_KEY[toast.type] : undefined;
+	const iconColor = toast != null ? TOAST_ICON_COLOR_KEY[toast.type] : undefined;
 
 	return (
 		<ToastContext.Provider value={contextValue}>
@@ -139,23 +140,6 @@ export function useToast(): ToastContextValue {
 	}
 	return ctx;
 }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const ICON_MAP: Record<ToastType, React.ComponentProps<typeof Ionicons>["name"]> = {
-	success: "checkmark-circle",
-	error: "alert-circle",
-	warning: "warning",
-	info: "information-circle",
-};
-
-type StatusColorKey = "success" | "error" | "warning" | "info";
-const ICON_COLOR_KEY: Record<ToastType, StatusColorKey> = {
-	success: "success",
-	error: "error",
-	warning: "warning",
-	info: "info",
-};
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 

@@ -13,6 +13,7 @@ import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import type { EntryListItem } from "@/types/entry.types";
 import { s, vs } from "@/utils";
+import { ANALYSIS_STATUS_LABELS } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge } from "../ui/display/Badge";
 import { Card } from "../ui/display/Card";
@@ -21,13 +22,6 @@ interface Props {
 	entry: EntryListItem;
 	onPress: () => void;
 }
-
-const ANALYSIS_STATUS_LABELS: Record<string, string> = {
-	PENDING: "Chờ phân tích",
-	PROCESSING: "Đang phân tích",
-	COMPLETED: "Đã phân tích",
-	FAILED: "Phân tích lỗi",
-};
 
 function formatEntryDate(isoDate: string): string {
 	const date = new Date(isoDate);
