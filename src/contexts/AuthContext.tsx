@@ -21,7 +21,7 @@ import {
 	setStorageItem,
 	setUserData,
 } from "@/utils/storage";
-import { AuthorizationStatus, getMessaging, getToken, requestPermission } from "@react-native-firebase/messaging";
+import { AuthorizationStatus, getMessaging, getToken, onTokenRefresh, requestPermission } from "@react-native-firebase/messaging";
 import { createContext, useCallback, useEffect, useState, type ReactNode } from "react";
 import { PermissionsAndroid, Platform } from "react-native";
 import { notificationService } from "@/services/notification.service";
@@ -107,6 +107,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
 			}
 		})();
 	}, []);
+
+	// FR-21: Re-register FCM token whenever Firebase rotates it
+	useEffect(() => {
+		if (!state.isAuthenticated) return;
+
+		const unsubscribe = onTokenRefresh(getMessaging(), async (newToken) => {
+			const platform = Platform.OS === "android" || Platform.OS === "ios" ? Platform.OS : undefined;
+			try {
+				await notificationService.registerDeviceToken({ token: newToken, platform });
+			} catch (err) {
+				logError(err, { context: "AuthContext.onTokenRefresh" });
+			}
+		});
+
+		return unsubscribe;
+	}, [state.isAuthenticated]);
 
 	// ─── Actions ─────────────────────────────────────────────────────────────────
 
