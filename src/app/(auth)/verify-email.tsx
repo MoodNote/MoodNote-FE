@@ -1,7 +1,7 @@
 // FR-01: Email verification after registration
 import { ScreenWrapper } from "@/components/layout";
 import { Button, Input } from "@/components/ui";
-import { ROUTES } from "@/constants";
+import { AUTH_RESEND_COOLDOWN_SECONDS, ROUTES } from "@/constants";
 import { useAuth, useThemeColors } from "@/hooks";
 import { useForm } from "@/hooks/useForm";
 import { verifyOtpSchema } from "@/schemas";
@@ -14,15 +14,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
 
-const RESEND_COOLDOWN = 60;
-
 export default function VerifyEmailScreen() {
 	const colors = useThemeColors();
 	const styles = useMemo(() => createStyles(colors), [colors]);
 	const { verifyEmail, resendVerification } = useAuth();
 	const { email } = useLocalSearchParams<{ email: string }>();
 
-	const [timer, setTimer] = useState(RESEND_COOLDOWN);
+	const [timer, setTimer] = useState(AUTH_RESEND_COOLDOWN_SECONDS);
 	const [isResending, setIsResending] = useState(false);
 
 	// Countdown timer — starts immediately on mount
@@ -48,7 +46,7 @@ export default function VerifyEmailScreen() {
 		setIsResending(true);
 		try {
 			await resendVerification({ email: email ?? "" });
-			setTimer(RESEND_COOLDOWN);
+			setTimer(AUTH_RESEND_COOLDOWN_SECONDS);
 		} finally {
 			setIsResending(false);
 		}

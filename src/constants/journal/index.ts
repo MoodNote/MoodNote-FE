@@ -1,5 +1,7 @@
 import { actions } from "react-native-pell-rich-editor";
 
+import type { AnalysisStatus } from "@/types";
+
 export const TOOLBAR_ACTIONS = [
 	actions.heading1,
 	actions.heading2,
@@ -58,3 +60,7 @@ export const INTENSITY_LABELS: { max: number; label: string }[] = [
 	{ max: 80, label: "Mạnh" },
 	{ max: 100, label: "Rất mạnh" },
 ];
+
+export const ANALYSIS_POLL_INTERVAL_MS = 3000;
+
+export const ANALYSIS_POLLING_STATUSES: AnalysisStatus[] = ["PENDING", "PROCESSING"];

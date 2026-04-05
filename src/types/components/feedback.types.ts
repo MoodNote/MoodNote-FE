@@ -20,6 +20,8 @@ export interface SkeletonLoaderProps {
 
 export type ToastType = "success" | "error" | "warning" | "info";
 
+export type NotificationPopupType = "info" | "success" | "warning" | "error";
+
 export interface ToastOptions {
 	message: string;
 	type?: ToastType;

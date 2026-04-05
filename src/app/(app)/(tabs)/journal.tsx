@@ -19,16 +19,12 @@ import { EntryCard } from "@/components/journal";
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
 import { EmptyState } from "@/components/ui/feedback/EmptyState";
 import { JournalIllustration } from "@/components/ui/illustrations/JournalIllustration";
-import { ROUTES } from "@/constants";
+import { ROUTES, SWIPE_DELETE_ACTION_WIDTH, SWIPE_DELETE_AUTO_DRAG_THRESHOLD } from "@/constants";
 import { useEntries, useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import type { EntryListItem } from "@/types/entry.types";
 import { s, vs } from "@/utils";
-
-const SWIPE_ACTION_WIDTH = s(72);
-// Drag threshold for auto-delete (negative = swiped left)
-const AUTO_DELETE_DRAG = -s(150);
 
 interface SwipeDeleteActionProps {
 	progress: SharedValue<number>;
@@ -38,12 +34,7 @@ interface SwipeDeleteActionProps {
 	onAutoDelete: () => void;
 }
 
-function SwipeDeleteAction({
-	drag,
-	swipeable,
-	onPress,
-	onAutoDelete,
-}: SwipeDeleteActionProps) {
+function SwipeDeleteAction({ drag, swipeable, onPress, onAutoDelete }: SwipeDeleteActionProps) {
 	const colors = useThemeColors();
 
 	// Fire auto-delete exactly once when drag crosses the threshold
@@ -52,8 +43,8 @@ function SwipeDeleteAction({
 		(current, previous) => {
 			if (
 				previous !== null &&
-				current < AUTO_DELETE_DRAG &&
-				previous >= AUTO_DELETE_DRAG
+				current < SWIPE_DELETE_AUTO_DRAG_THRESHOLD &&
+				previous >= SWIPE_DELETE_AUTO_DRAG_THRESHOLD
 			) {
 				swipeable.close();
 				onAutoDelete();
@@ -65,7 +56,7 @@ function SwipeDeleteAction({
 	const iconStyle = useAnimatedStyle(() => {
 		const scale = interpolate(
 			drag.value,
-			[-SWIPE_ACTION_WIDTH, AUTO_DELETE_DRAG],
+			[-SWIPE_DELETE_ACTION_WIDTH, SWIPE_DELETE_AUTO_DRAG_THRESHOLD],
 			[1, 1.3],
 			Extrapolation.CLAMP,
 		);
@@ -76,8 +67,8 @@ function SwipeDeleteAction({
 	const containerStyle = useAnimatedStyle(() => {
 		const width = interpolate(
 			drag.value,
-			[AUTO_DELETE_DRAG, -SWIPE_ACTION_WIDTH, 0],
-			[SWIPE_ACTION_WIDTH * 1.5, SWIPE_ACTION_WIDTH, SWIPE_ACTION_WIDTH],
+			[SWIPE_DELETE_AUTO_DRAG_THRESHOLD, -SWIPE_DELETE_ACTION_WIDTH, 0],
+			[SWIPE_DELETE_ACTION_WIDTH * 1.5, SWIPE_DELETE_ACTION_WIDTH, SWIPE_DELETE_ACTION_WIDTH],
 			Extrapolation.CLAMP,
 		);
 		return { width };
@@ -85,11 +76,7 @@ function SwipeDeleteAction({
 
 	return (
 		<Animated.View
-			style={[
-				swipeStyles.action,
-				{ backgroundColor: colors.status.error },
-				containerStyle,
-			]}>
+			style={[swipeStyles.action, { backgroundColor: colors.status.error }, containerStyle]}>
 			<Pressable
 				style={swipeStyles.pressable}
 				onPress={onPress}
@@ -123,18 +110,14 @@ export default function JournalScreen() {
 
 	const handleDelete = useCallback(
 		(item: EntryListItem) => {
-			Alert.alert(
-				"Xoá nhật ký",
-				"Bạn có chắc muốn xoá nhật ký này? Thao tác không thể hoàn tác.",
-				[
-					{ text: "Huỷ", style: "cancel" },
-					{
-						text: "Xoá",
-						style: "destructive",
-						onPress: () => void removeEntry(item.id),
-					},
-				],
-			);
+			Alert.alert("Xoá nhật ký", "Bạn có chắc muốn xoá nhật ký này? Thao tác không thể hoàn tác.", [
+				{ text: "Huỷ", style: "cancel" },
+				{
+					text: "Xoá",
+					style: "destructive",
+					onPress: () => void removeEntry(item.id),
+				},
+			]);
 		},
 		[removeEntry],
 	);
@@ -152,13 +135,10 @@ export default function JournalScreen() {
 							onAutoDelete={() => handleDelete(item)}
 						/>
 					)}
-					rightThreshold={SWIPE_ACTION_WIDTH * 0.8}
+					rightThreshold={SWIPE_DELETE_ACTION_WIDTH * 0.8}
 					overshootFriction={6}
 					friction={1.5}>
-					<EntryCard
-						entry={item}
-						onPress={() => router.push(ROUTES.JOURNAL_DETAIL(item.id))}
-					/>
+					<EntryCard entry={item} onPress={() => router.push(ROUTES.JOURNAL_DETAIL(item.id))} />
 				</ReanimatedSwipeable>
 			</View>
 		),

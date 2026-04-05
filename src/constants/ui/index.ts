@@ -21,3 +21,6 @@ export const BLOB_LAYERS = Array.from({ length: 24 }, (_, i) => {
 
 export const AVATAR_SIZE_MAP = { sm: SIZE.xs, md: SIZE.md, lg: SIZE["2xl"] } as const;
 export const AVATAR_FONT_MAP = { sm: FONT_SIZE[12], md: s(16), lg: FONT_SIZE[22] } as const;
+
+export const SWIPE_DELETE_ACTION_WIDTH = s(72);
+export const SWIPE_DELETE_AUTO_DRAG_THRESHOLD = -s(150);

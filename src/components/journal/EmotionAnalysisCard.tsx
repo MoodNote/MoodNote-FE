@@ -4,32 +4,12 @@ import { useMemo } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { Badge } from "@/components/ui/display/Badge";
-import {
-	EMOTION_TYPE_LABELS,
-	INTENSITY_LABELS,
-	SENTIMENT_LABELS,
-} from "@/constants/journal";
+import { EMOTION_TYPE_LABELS } from "@/constants/journal";
 import { useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
-import { s, vs } from "@/utils";
 import type { EmotionAnalysis, EmotionType } from "@/types/entry.types";
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function getSentimentLabel(score: number): string {
-	return (
-		SENTIMENT_LABELS.find((item) => score <= item.max)?.label ??
-		SENTIMENT_LABELS[SENTIMENT_LABELS.length - 1].label
-	);
-}
-
-function getIntensityLabel(intensity: number): string {
-	return (
-		INTENSITY_LABELS.find((item) => intensity <= item.max)?.label ??
-		INTENSITY_LABELS[INTENSITY_LABELS.length - 1].label
-	);
-}
+import { getIntensityLabel, getSentimentLabel, s, vs } from "@/utils";
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -148,9 +128,7 @@ export function EmotionAnalysisCard({ analysis }: Props) {
 						const barWidth = Math.round(value * 100);
 						return (
 							<View key={emotion} style={styles.distRow}>
-								<Text style={styles.distLabel}>
-									{EMOTION_TYPE_LABELS[emotion] ?? emotion}
-								</Text>
+								<Text style={styles.distLabel}>{EMOTION_TYPE_LABELS[emotion] ?? emotion}</Text>
 								<View style={styles.distTrack}>
 									<View
 										style={[

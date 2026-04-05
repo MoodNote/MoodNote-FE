@@ -1,7 +1,6 @@
 import type { Ionicons } from "@expo/vector-icons";
 
-import type { StatusIndicatorStatus } from "@/types";
-import type { ToastType } from "@/types";
+import type { NotificationPopupType, StatusIndicatorStatus, ToastType } from "@/types";
 import { vs } from "@/utils/responsive";
 
 export const STATUS_INDICATOR_LABELS: Record<StatusIndicatorStatus, string> = {
@@ -27,4 +26,16 @@ export const TOAST_ICON_COLOR_KEY: Record<ToastType, StatusColorKey> = {
 	error: "error",
 	warning: "warning",
 	info: "info",
+};
+
+export const NOTIFICATION_POPUP_SLIDE_OFFSET = -120;
+
+export const NOTIFICATION_POPUP_ICON_MAP: Record<
+	NotificationPopupType,
+	React.ComponentProps<typeof Ionicons>["name"]
+> = {
+	info: "information-circle",
+	success: "checkmark-circle",
+	warning: "warning",
+	error: "close-circle",
 };

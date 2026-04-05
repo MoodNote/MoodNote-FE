@@ -1,5 +1,6 @@
 // Hook for notification list, unread count, and per-notification actions
 
+import { DEFAULT_PAGE_LIMIT } from "@/constants";
 import { notificationService } from "@/services/notification.service";
 import { useNotificationStore } from "@/store";
 import type {
@@ -10,14 +11,15 @@ import type {
 import { logError } from "@/utils/error";
 import { useCallback, useEffect, useState } from "react";
 
-const PAGE_LIMIT = 20;
-
 export function useNotifications(): UseNotificationsResult {
 	const [notifications, setNotifications] = useState<Notification[]>([]);
 	const [pagination, setPagination] = useState<NotificationPagination | null>(null);
 	const [unreadCount, setUnreadCount] = useState(0);
-	const { setUnreadCount: storeSetUnreadCount, decrementUnreadCount, resetUnreadCount } =
-		useNotificationStore();
+	const {
+		setUnreadCount: storeSetUnreadCount,
+		decrementUnreadCount,
+		resetUnreadCount,
+	} = useNotificationStore();
 	const [isLoading, setIsLoading] = useState(true);
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -33,7 +35,7 @@ export function useNotifications(): UseNotificationsResult {
 	}, [storeSetUnreadCount]);
 
 	const fetchPage = useCallback(async (page: number) => {
-		const result = await notificationService.getAll({ page, limit: PAGE_LIMIT });
+		const result = await notificationService.getAll({ page, limit: DEFAULT_PAGE_LIMIT });
 		if (!result.success) {
 			throw new Error(result.error);
 		}
@@ -90,20 +92,23 @@ export function useNotifications(): UseNotificationsResult {
 		}
 	}, [isLoadingMore, pagination, currentPage, fetchPage]);
 
-	const markRead = useCallback(async (id: string) => {
-		const result = await notificationService.markRead(id);
-		if (!result.success) {
-			logError(result.error, { context: "useNotifications.markRead" });
-			return;
-		}
-		setNotifications((prev) =>
-			prev.map((n) =>
-				n.id === id ? { ...n, isRead: true, readAt: new Date().toISOString() } : n,
-			),
-		);
-		setUnreadCount((prev) => Math.max(0, prev - 1));
-		decrementUnreadCount();
-	}, [decrementUnreadCount]);
+	const markRead = useCallback(
+		async (id: string) => {
+			const result = await notificationService.markRead(id);
+			if (!result.success) {
+				logError(result.error, { context: "useNotifications.markRead" });
+				return;
+			}
+			setNotifications((prev) =>
+				prev.map((n) =>
+					n.id === id ? { ...n, isRead: true, readAt: new Date().toISOString() } : n,
+				),
+			);
+			setUnreadCount((prev) => Math.max(0, prev - 1));
+			decrementUnreadCount();
+		},
+		[decrementUnreadCount],
+	);
 
 	const markAllRead = useCallback(async () => {
 		const result = await notificationService.markAllRead();
@@ -118,24 +123,25 @@ export function useNotifications(): UseNotificationsResult {
 		resetUnreadCount();
 	}, [resetUnreadCount]);
 
-	const deleteNotification = useCallback(async (id: string) => {
-		const result = await notificationService.deleteOne(id);
-		if (!result.success) {
-			logError(result.error, { context: "useNotifications.deleteNotification" });
-			return;
-		}
-		setNotifications((prev) => {
-			const removed = prev.find((n) => n.id === id);
-			if (removed && !removed.isRead) {
-				setUnreadCount((count) => Math.max(0, count - 1));
-				decrementUnreadCount();
+	const deleteNotification = useCallback(
+		async (id: string) => {
+			const result = await notificationService.deleteOne(id);
+			if (!result.success) {
+				logError(result.error, { context: "useNotifications.deleteNotification" });
+				return;
 			}
-			return prev.filter((n) => n.id !== id);
-		});
-		setPagination((prev) =>
-			prev ? { ...prev, total: Math.max(0, prev.total - 1) } : prev,
-		);
-	}, [decrementUnreadCount]);
+			setNotifications((prev) => {
+				const removed = prev.find((n) => n.id === id);
+				if (removed && !removed.isRead) {
+					setUnreadCount((count) => Math.max(0, count - 1));
+					decrementUnreadCount();
+				}
+				return prev.filter((n) => n.id !== id);
+			});
+			setPagination((prev) => (prev ? { ...prev, total: Math.max(0, prev.total - 1) } : prev));
+		},
+		[decrementUnreadCount],
+	);
 
 	return {
 		notifications,

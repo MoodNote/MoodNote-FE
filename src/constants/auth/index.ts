@@ -1,0 +1,3 @@
+export const AUTH_RESEND_COOLDOWN_SECONDS = 60;
+
+export const FORGOT_PASSWORD_TOTAL_STEPS = 3;

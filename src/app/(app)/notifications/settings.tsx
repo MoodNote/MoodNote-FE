@@ -3,14 +3,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-	ActivityIndicator,
-	Pressable,
-	ScrollView,
-	StyleSheet,
-	Text,
-	View,
-} from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
 import { Button } from "@/components/ui/buttons/Button";
@@ -18,16 +11,12 @@ import { Divider } from "@/components/ui/display/Divider";
 import { SkeletonLoader } from "@/components/ui/feedback/SkeletonLoader";
 import { ToggleSwitch } from "@/components/ui/inputs/ToggleSwitch";
 import { Modal } from "@/components/ui/overlay/Modal";
+import { NOTIFICATION_DAY_LABELS, NOTIFICATION_MINUTE_STEP } from "@/constants";
 import { useNotificationSettings, useThemeColors } from "@/hooks";
-import { logError } from "@/utils/error";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
-import { s, vs } from "@/utils";
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const DAY_LABELS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-const MINUTE_STEP = 5;
+import { s, stepHour, stepMinute, vs } from "@/utils";
+import { logError } from "@/utils/error";
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -97,24 +86,16 @@ export default function NotificationSettingsScreen() {
 
 	// Hour/minute increment helpers
 	const incrementHour = useCallback(() => {
-		setHourStr((prev) => String((parseInt(prev, 10) + 1) % 24).padStart(2, "0"));
+		setHourStr((prev) => stepHour(prev, 1));
 	}, []);
 	const decrementHour = useCallback(() => {
-		setHourStr((prev) => String((parseInt(prev, 10) + 23) % 24).padStart(2, "0"));
+		setHourStr((prev) => stepHour(prev, -1));
 	}, []);
 	const incrementMinute = useCallback(() => {
-		const steps = 60 / MINUTE_STEP;
-		setMinuteStr((prev) => {
-			const idx = parseInt(prev, 10) / MINUTE_STEP;
-			return String(((idx + 1) % steps) * MINUTE_STEP).padStart(2, "0");
-		});
+		setMinuteStr((prev) => stepMinute(prev, NOTIFICATION_MINUTE_STEP, 1));
 	}, []);
 	const decrementMinute = useCallback(() => {
-		const steps = 60 / MINUTE_STEP;
-		setMinuteStr((prev) => {
-			const idx = parseInt(prev, 10) / MINUTE_STEP;
-			return String(((idx - 1 + steps) % steps) * MINUTE_STEP).padStart(2, "0");
-		});
+		setMinuteStr((prev) => stepMinute(prev, NOTIFICATION_MINUTE_STEP, -1));
 	}, []);
 
 	// ─── Render ─────────────────────────────────────────────────────────────────
@@ -161,11 +142,7 @@ export default function NotificationSettingsScreen() {
 						<View style={styles.card}>
 							<ToggleSwitch
 								label="Nhắc nhở hàng ngày"
-								sublabel={
-									reminderEnabled
-										? `Nhắc lúc ${hourStr}:${minuteStr}`
-										: "Tắt nhắc nhở"
-								}
+								sublabel={reminderEnabled ? `Nhắc lúc ${hourStr}:${minuteStr}` : "Tắt nhắc nhở"}
 								value={reminderEnabled}
 								onValueChange={(v) => void handleToggleReminder(v)}
 							/>
@@ -183,11 +160,7 @@ export default function NotificationSettingsScreen() {
 											<Text style={styles.timeValue}>
 												{hourStr}:{minuteStr}
 											</Text>
-											<Ionicons
-												name="chevron-forward"
-												size={s(16)}
-												color={colors.text.muted}
-											/>
+											<Ionicons name="chevron-forward" size={s(16)} color={colors.text.muted} />
 										</View>
 									</Pressable>
 								</>
@@ -199,7 +172,7 @@ export default function NotificationSettingsScreen() {
 							<View style={styles.card}>
 								<Text style={styles.sectionLabel}>Ngày nhắc</Text>
 								<View style={styles.daysRow}>
-									{DAY_LABELS.map((label, i) => {
+									{NOTIFICATION_DAY_LABELS.map((label, i) => {
 										const day = i + 1; // ISO weekday 1–7
 										const selected = reminderDays.includes(day);
 										return (
@@ -210,11 +183,10 @@ export default function NotificationSettingsScreen() {
 													selected
 														? { backgroundColor: colors.brand.primary }
 														: {
-																backgroundColor:
-																	colors.background.card,
+																backgroundColor: colors.background.card,
 																borderWidth: 1,
 																borderColor: colors.border.default,
-														  },
+															},
 												]}
 												onPress={() => void handleDayToggle(day)}
 												accessibilityLabel={label}
@@ -223,9 +195,7 @@ export default function NotificationSettingsScreen() {
 													style={[
 														styles.dayChipText,
 														{
-															color: selected
-																? colors.text.inverse
-																: colors.text.secondary,
+															color: selected ? colors.text.inverse : colors.text.secondary,
 														},
 													]}>
 													{label}
@@ -261,11 +231,7 @@ export default function NotificationSettingsScreen() {
 							hitSlop={8}
 							accessibilityLabel="Giảm giờ"
 							accessibilityRole="button">
-							<Ionicons
-								name="chevron-down"
-								size={s(28)}
-								color={colors.text.secondary}
-							/>
+							<Ionicons name="chevron-down" size={s(28)} color={colors.text.secondary} />
 						</Pressable>
 					</View>
 
@@ -286,21 +252,12 @@ export default function NotificationSettingsScreen() {
 							hitSlop={8}
 							accessibilityLabel="Giảm phút"
 							accessibilityRole="button">
-							<Ionicons
-								name="chevron-down"
-								size={s(28)}
-								color={colors.text.secondary}
-							/>
+							<Ionicons name="chevron-down" size={s(28)} color={colors.text.secondary} />
 						</Pressable>
 					</View>
 				</View>
 
-				<Button
-					title="Xong"
-					variant="primary"
-					fullWidth
-					onPress={() => void handleTimeConfirm()}
-				/>
+				<Button title="Xong" variant="primary" fullWidth onPress={() => void handleTimeConfirm()} />
 			</Modal>
 		</ScreenWrapper>
 	);

@@ -20,16 +20,12 @@ import { Badge } from "@/components/ui/display/Badge";
 import { EmptyState } from "@/components/ui/feedback/EmptyState";
 import { LoadingSpinner } from "@/components/ui/feedback/LoadingSpinner";
 import { SkeletonLoader } from "@/components/ui/feedback/SkeletonLoader";
+import { SWIPE_DELETE_ACTION_WIDTH, SWIPE_DELETE_AUTO_DRAG_THRESHOLD } from "@/constants";
 import { useNotifications, useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import type { Notification, NotificationType } from "@/types/notification.types";
-import { s, vs, formatRelativeTime } from "@/utils";
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const SWIPE_ACTION_WIDTH = s(72);
-const AUTO_DELETE_DRAG = -s(150);
+import { formatRelativeTime, s, vs } from "@/utils";
 
 const TYPE_ICON: Record<NotificationType, string> = {
 	SYSTEM: "notifications-outline",
@@ -59,7 +55,11 @@ function SwipeDeleteAction({ drag, swipeable, onPress, onAutoDelete }: SwipeDele
 	useAnimatedReaction(
 		() => drag.value,
 		(current, previous) => {
-			if (previous !== null && current < AUTO_DELETE_DRAG && previous >= AUTO_DELETE_DRAG) {
+			if (
+				previous !== null &&
+				current < SWIPE_DELETE_AUTO_DRAG_THRESHOLD &&
+				previous >= SWIPE_DELETE_AUTO_DRAG_THRESHOLD
+			) {
 				swipeable.close();
 				onAutoDelete();
 			}
@@ -69,7 +69,7 @@ function SwipeDeleteAction({ drag, swipeable, onPress, onAutoDelete }: SwipeDele
 	const iconStyle = useAnimatedStyle(() => {
 		const scale = interpolate(
 			drag.value,
-			[-SWIPE_ACTION_WIDTH, AUTO_DELETE_DRAG],
+			[-SWIPE_DELETE_ACTION_WIDTH, SWIPE_DELETE_AUTO_DRAG_THRESHOLD],
 			[1, 1.3],
 			Extrapolation.CLAMP,
 		);
@@ -79,8 +79,8 @@ function SwipeDeleteAction({ drag, swipeable, onPress, onAutoDelete }: SwipeDele
 	const containerStyle = useAnimatedStyle(() => {
 		const width = interpolate(
 			drag.value,
-			[AUTO_DELETE_DRAG, -SWIPE_ACTION_WIDTH, 0],
-			[SWIPE_ACTION_WIDTH * 1.5, SWIPE_ACTION_WIDTH, SWIPE_ACTION_WIDTH],
+			[SWIPE_DELETE_AUTO_DRAG_THRESHOLD, -SWIPE_DELETE_ACTION_WIDTH, 0],
+			[SWIPE_DELETE_ACTION_WIDTH * 1.5, SWIPE_DELETE_ACTION_WIDTH, SWIPE_DELETE_ACTION_WIDTH],
 			Extrapolation.CLAMP,
 		);
 		return { width };
@@ -134,7 +134,9 @@ function NotificationItem({ item, onMarkRead, colors, styles }: NotificationItem
 				styles.item,
 				{ backgroundColor: item.isRead ? colors.background.card : colors.background.elevated },
 			]}
-			onPress={() => { if (!item.isRead) onMarkRead(item.id); }}
+			onPress={() => {
+				if (!item.isRead) onMarkRead(item.id);
+			}}
 			accessibilityRole="button"
 			accessibilityLabel={item.title}>
 			{/* Unread dot */}
@@ -154,10 +156,7 @@ function NotificationItem({ item, onMarkRead, colors, styles }: NotificationItem
 					size="sm"
 				/>
 				<Text
-					style={[
-						styles.itemTitle,
-						{ fontWeight: item.isRead ? "500" : "700" },
-					]}
+					style={[styles.itemTitle, { fontWeight: item.isRead ? "500" : "700" }]}
 					numberOfLines={1}>
 					{item.title}
 				</Text>
@@ -225,7 +224,7 @@ export default function NotificationsScreen() {
 							onAutoDelete={() => handleDelete(item.id)}
 						/>
 					)}
-					rightThreshold={SWIPE_ACTION_WIDTH * 0.8}
+					rightThreshold={SWIPE_DELETE_ACTION_WIDTH * 0.8}
 					overshootFriction={6}
 					friction={1.5}>
 					<NotificationItem

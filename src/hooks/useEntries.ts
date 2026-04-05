@@ -1,11 +1,12 @@
 // FR-06, FR-09, NFR-04: Local-first journal list with server sync
 
+import { DEFAULT_PAGE_LIMIT } from "@/constants";
 import {
 	getAllEntries,
-	markEntryDeleted,
-	hardDeleteEntry,
-	upsertListFromServer,
 	getEntryServerId,
+	hardDeleteEntry,
+	markEntryDeleted,
+	upsertListFromServer,
 } from "@/db";
 import { entryService } from "@/services";
 import type { EntryListItem, EntryPagination, UseEntriesResult } from "@/types/entry.types";
@@ -13,14 +14,12 @@ import { logError } from "@/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSync } from "./useSync";
 
-const PAGE_LIMIT = 20;
-
 export function useEntries(): UseEntriesResult {
 	const { isOnline, isSyncing } = useSync();
 
 	// Full sorted list from local DB
 	const [allEntries, setAllEntries] = useState<EntryListItem[]>([]);
-	const [displayCount, setDisplayCount] = useState(PAGE_LIMIT);
+	const [displayCount, setDisplayCount] = useState(DEFAULT_PAGE_LIMIT);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -47,7 +46,7 @@ export function useEntries(): UseEntriesResult {
 		let page = 1;
 		let hasMore = true;
 		while (hasMore) {
-			const result = await entryService.getList({ page, limit: PAGE_LIMIT });
+			const result = await entryService.getList({ page, limit: DEFAULT_PAGE_LIMIT });
 			if (!result.success) {
 				logError(result.error, { context: "useEntries.syncFromServer" });
 				break;
@@ -99,7 +98,7 @@ export function useEntries(): UseEntriesResult {
 				await syncFromServer();
 			}
 			await loadFromDb();
-			setDisplayCount(PAGE_LIMIT);
+			setDisplayCount(DEFAULT_PAGE_LIMIT);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "An unexpected error occurred.");
 		} finally {
@@ -110,7 +109,7 @@ export function useEntries(): UseEntriesResult {
 	const loadMore = useCallback(async () => {
 		if (isLoadingMore || displayCount >= allEntries.length) return;
 		setIsLoadingMore(true);
-		setDisplayCount((prev) => prev + PAGE_LIMIT);
+		setDisplayCount((prev) => prev + DEFAULT_PAGE_LIMIT);
 		setIsLoadingMore(false);
 	}, [isLoadingMore, displayCount, allEntries.length]);
 
@@ -140,9 +139,9 @@ export function useEntries(): UseEntriesResult {
 		allEntries.length > 0
 			? {
 					total: allEntries.length,
-					page: Math.ceil(displayCount / PAGE_LIMIT),
-					limit: PAGE_LIMIT,
-					totalPages: Math.ceil(allEntries.length / PAGE_LIMIT),
+					page: Math.ceil(displayCount / DEFAULT_PAGE_LIMIT),
+					limit: DEFAULT_PAGE_LIMIT,
+					totalPages: Math.ceil(allEntries.length / DEFAULT_PAGE_LIMIT),
 				}
 			: null;
 

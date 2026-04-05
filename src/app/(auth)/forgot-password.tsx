@@ -1,7 +1,7 @@
 // FR-03: Forgot password — multi-step: email → OTP → new password
 import { ScreenWrapper } from "@/components/layout";
 import { Button, Input } from "@/components/ui";
-import { ROUTES } from "@/constants";
+import { AUTH_RESEND_COOLDOWN_SECONDS, FORGOT_PASSWORD_TOTAL_STEPS, ROUTES } from "@/constants";
 import { useAuth, useThemeColors } from "@/hooks";
 import { useForm } from "@/hooks/useForm";
 import { forgotPasswordSchema, newPasswordSchema, verifyOtpSchema } from "@/schemas";
@@ -16,8 +16,6 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 
 type Step = 1 | 2 | 3;
-const RESEND_COOLDOWN = 60;
-const TOTAL_STEPS = 3;
 
 export default function ForgotPasswordScreen() {
 	const colors = useThemeColors();
@@ -51,7 +49,7 @@ export default function ForgotPasswordScreen() {
 		onSubmit: async (values) => {
 			await forgotPassword({ email: values.email });
 			setEmail(values.email);
-			setResendTimer(RESEND_COOLDOWN);
+			setResendTimer(AUTH_RESEND_COOLDOWN_SECONDS);
 			setStep(2);
 		},
 	});
@@ -73,7 +71,11 @@ export default function ForgotPasswordScreen() {
 		schema: newPasswordSchema,
 		defaultValues: { password: "", confirmPassword: "" },
 		onSubmit: async (values) => {
-			await resetPassword({ email, password: values.password, confirmPassword: values.confirmPassword });
+			await resetPassword({
+				email,
+				password: values.password,
+				confirmPassword: values.confirmPassword,
+			});
 			router.replace(ROUTES.LOGIN);
 		},
 	});
@@ -93,7 +95,7 @@ export default function ForgotPasswordScreen() {
 		setIsResending(true);
 		try {
 			await forgotPassword({ email });
-			setResendTimer(RESEND_COOLDOWN);
+			setResendTimer(AUTH_RESEND_COOLDOWN_SECONDS);
 		} finally {
 			setIsResending(false);
 		}
@@ -139,7 +141,7 @@ export default function ForgotPasswordScreen() {
 
 					{/* Progress dots */}
 					<View style={styles.progressDots}>
-						{Array.from({ length: TOTAL_STEPS }, (_, i) => (
+						{Array.from({ length: FORGOT_PASSWORD_TOTAL_STEPS }, (_, i) => (
 							<View
 								key={i}
 								style={[styles.dot, i + 1 === step ? styles.dotActive : styles.dotInactive]}
@@ -265,9 +267,7 @@ export default function ForgotPasswordScreen() {
 									onPress={toggleConfirmPasswordVisible}
 									hitSlop={8}
 									accessibilityLabel={
-										confirmPasswordVisible
-											? "Ẩn mật khẩu xác nhận"
-											: "Hiện mật khẩu xác nhận"
+										confirmPasswordVisible ? "Ẩn mật khẩu xác nhận" : "Hiện mật khẩu xác nhận"
 									}
 									accessibilityRole="button">
 									<Feather

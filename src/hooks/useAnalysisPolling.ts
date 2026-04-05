@@ -3,12 +3,10 @@
 
 import { useEffect } from "react";
 
+import { ANALYSIS_POLLING_STATUSES, ANALYSIS_POLL_INTERVAL_MS } from "@/constants";
 import { updateAnalysisStatus } from "@/db";
 import { entryService } from "@/services";
 import type { AnalysisStatus, Entry } from "@/types/entry.types";
-
-const POLL_INTERVAL_MS = 3000;
-const POLLING_STATUSES: AnalysisStatus[] = ["PENDING", "PROCESSING"];
 
 interface UseAnalysisPollingOptions {
 	serverId: string | null;
@@ -26,7 +24,7 @@ export function useAnalysisPolling({
 	onUpdate,
 }: UseAnalysisPollingOptions): void {
 	useEffect(() => {
-		if (!serverId || !isOnline || !POLLING_STATUSES.includes(currentStatus)) {
+		if (!serverId || !isOnline || !ANALYSIS_POLLING_STATUSES.includes(currentStatus)) {
 			return;
 		}
 
@@ -37,7 +35,7 @@ export function useAnalysisPolling({
 
 				const serverEntry = result.data.entry;
 
-				if (!POLLING_STATUSES.includes(serverEntry.analysisStatus)) {
+				if (!ANALYSIS_POLLING_STATUSES.includes(serverEntry.analysisStatus)) {
 					// Status resolved — persist to local DB and notify caller
 					await updateAnalysisStatus(
 						localId,
@@ -51,7 +49,7 @@ export function useAnalysisPolling({
 					clearInterval(intervalId);
 				}
 			})();
-		}, POLL_INTERVAL_MS);
+		}, ANALYSIS_POLL_INTERVAL_MS);
 
 		return () => clearInterval(intervalId);
 	}, [serverId, localId, currentStatus, isOnline, onUpdate]);

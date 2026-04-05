@@ -1,18 +1,26 @@
 // In-app notification popup — slides down from the top on foreground push events
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import {
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import { Animated, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { NOTIFICATION_POPUP_ICON_MAP, NOTIFICATION_POPUP_SLIDE_OFFSET } from "@/constants";
 import { useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
-import { s } from "@/utils";
+import type { NotificationPopupType } from "@/types";
+import { getNotificationPopupTypeColors, s } from "@/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-export type NotificationPopupType = "info" | "success" | "warning" | "error";
 
 export interface NotificationPopupOptions {
 	title?: string;
@@ -37,30 +45,6 @@ interface NotificationPopupProviderProps {
 	children: React.ReactNode;
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const POPUP_SLIDE_OFFSET = -120;
-
-const ICON_MAP: Record<NotificationPopupType, React.ComponentProps<typeof Ionicons>["name"]> = {
-	info: "information-circle",
-	success: "checkmark-circle",
-	warning: "warning",
-	error: "close-circle",
-};
-
-function getTypeColors(type: NotificationPopupType, colors: ThemeColors) {
-	switch (type) {
-		case "info":
-			return { bg: colors.background.elevated, accent: colors.status.info, icon: colors.status.info };
-		case "success":
-			return { bg: colors.background.elevated, accent: colors.status.success, icon: colors.status.success };
-		case "warning":
-			return { bg: colors.background.elevated, accent: colors.status.warning, icon: colors.status.warning };
-		case "error":
-			return { bg: colors.background.elevated, accent: colors.status.error, icon: colors.status.error };
-	}
-}
-
 // ─── Context ──────────────────────────────────────────────────────────────────
 
 const NotificationPopupContext = createContext<NotificationPopupContextValue | null>(null);
@@ -71,12 +55,12 @@ export function NotificationPopupProvider({ children }: NotificationPopupProvide
 	const styles = useMemo(() => createStyles(colors, insets.top), [colors, insets.top]);
 
 	const [popup, setPopup] = useState<PopupState | null>(null);
-	const slideAnim = useRef(new Animated.Value(POPUP_SLIDE_OFFSET)).current;
+	const slideAnim = useRef(new Animated.Value(NOTIFICATION_POPUP_SLIDE_OFFSET)).current;
 	const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
 	const hide = useCallback(() => {
 		Animated.timing(slideAnim, {
-			toValue: POPUP_SLIDE_OFFSET,
+			toValue: NOTIFICATION_POPUP_SLIDE_OFFSET,
 			duration: 250,
 			useNativeDriver: true,
 		}).start(() => setPopup(null));
@@ -95,7 +79,7 @@ export function NotificationPopupProvider({ children }: NotificationPopupProvide
 			};
 
 			setPopup(newPopup);
-			slideAnim.setValue(POPUP_SLIDE_OFFSET);
+			slideAnim.setValue(NOTIFICATION_POPUP_SLIDE_OFFSET);
 
 			Animated.timing(slideAnim, {
 				toValue: 0,
@@ -116,7 +100,7 @@ export function NotificationPopupProvider({ children }: NotificationPopupProvide
 
 	const contextValue = useMemo(() => ({ show }), [show]);
 
-	const typeColors = popup != null ? getTypeColors(popup.type, colors) : null;
+	const typeColors = popup != null ? getNotificationPopupTypeColors(popup.type, colors) : null;
 
 	return (
 		<NotificationPopupContext.Provider value={contextValue}>
@@ -134,7 +118,11 @@ export function NotificationPopupProvider({ children }: NotificationPopupProvide
 						]}>
 						{/* Icon */}
 						<View style={styles.iconWrap}>
-							<Ionicons name={ICON_MAP[popup.type]} size={s(22)} color={typeColors.icon} />
+							<Ionicons
+								name={NOTIFICATION_POPUP_ICON_MAP[popup.type]}
+								size={s(22)}
+								color={typeColors.icon}
+							/>
 						</View>
 
 						{/* Content */}
