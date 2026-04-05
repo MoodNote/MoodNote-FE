@@ -15,32 +15,67 @@ import {
 	TextInput,
 	View,
 } from "react-native";
+import Animated, {
+	Easing,
+	interpolate,
+	useAnimatedStyle,
+	useSharedValue,
+	withTiming,
+} from "react-native-reanimated";
 
 import { Badge } from "@/components/ui/display/Badge";
 import { Button } from "@/components/ui/buttons/Button";
-import { RichTextEditor } from "@/components/journal";
+import { EmotionAnalysisCard, RichTextEditor } from "@/components/journal";
 import type { RichTextEditorRef } from "@/components/journal";
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
-import { useAutoSave, useEntry, useForm, useThemeColors } from "@/hooks";
+import { ANALYSIS_STATUS_LABELS } from "@/constants/journal";
+import { useAnalysisPolling, useAutoSave, useEntry, useForm, useSync, useThemeColors } from "@/hooks";
+import { updateAnalysisStatus } from "@/db";
+import { entryService } from "@/services";
 import { editEntryFormSchema } from "@/schemas/entry.schemas";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import { htmlToText, s, vs } from "@/utils";
 import type { QuillDelta } from "@/types/entry.types";
 
-const ANALYSIS_STATUS_LABELS: Record<string, string> = {
-	PENDING: "Chờ phân tích",
-	PROCESSING: "Đang phân tích",
-	COMPLETED: "Đã phân tích",
-	FAILED: "Phân tích lỗi",
-};
-
 export default function EntryDetailScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const colors = useThemeColors();
 	const styles = useMemo(() => createStyles(colors), [colors]);
 
-	const { entry, isLoading, error, updateEntry, deleteEntry } = useEntry(id);
+	const { isOnline } = useSync();
+	const { entry, isLoading, error, serverId, updateEntry, deleteEntry } = useEntry(id);
+
+	// currentEntry tracks the displayed entry — starts from `entry`, updated by polling
+	const [currentEntry, setCurrentEntry] = useState(entry);
+	useEffect(() => {
+		if (entry) setCurrentEntry(entry);
+	}, [entry]);
+
+	const [isAnalysisExpanded, setIsAnalysisExpanded] = useState(false);
+	const expandProgress = useSharedValue(0);
+
+	const toggleAnalysis = useCallback(() => {
+		const toValue = isAnalysisExpanded ? 0 : 1;
+		expandProgress.value = withTiming(toValue, {
+			duration: 280,
+			easing: Easing.out(Easing.cubic),
+		});
+		setIsAnalysisExpanded((prev) => !prev);
+	}, [isAnalysisExpanded, expandProgress]);
+
+	const cardAnimStyle = useAnimatedStyle(() => ({
+		maxHeight: interpolate(expandProgress.value, [0, 1], [0, 600]),
+		opacity: expandProgress.value,
+		overflow: "hidden",
+	}));
+
+	const chevronAnimStyle = useAnimatedStyle(() => ({
+		transform: [
+			{ rotate: `${interpolate(expandProgress.value, [0, 1], [0, 180])}deg` },
+		],
+	}));
+
 	const [tagInput, setTagInput] = useState("");
 
 	// Rich text editor state — managed outside react-hook-form
@@ -56,7 +91,8 @@ export default function EntryDetailScreen() {
 	const currentTags = watch("tags") ?? [];
 	const titleValue = watch("title") ?? "";
 
-	// Populate form and deltaRef when entry loads
+	// Populate form and deltaRef when entry loads (use entry, not currentEntry, to avoid
+	// resetting the form mid-edit when polling updates analysis state)
 	useEffect(() => {
 		if (!entry) return;
 		reset({
@@ -65,6 +101,16 @@ export default function EntryDetailScreen() {
 		});
 		deltaRef.current = entry.content;
 	}, [entry, reset]);
+
+	// ── Analysis polling (FR-10) ─────────────────────────────────────────────
+
+	useAnalysisPolling({
+		serverId,
+		localId: id,
+		currentStatus: currentEntry?.analysisStatus ?? "PENDING",
+		isOnline,
+		onUpdate: setCurrentEntry,
+	});
 
 	// ── Auto-save ────────────────────────────────────────────────────────────
 
@@ -130,6 +176,19 @@ export default function EntryDetailScreen() {
 		);
 	}, [deleteEntry]);
 
+	// ── Retry analysis (FR-10) ──────────────────────────────────────────────
+
+	const handleRetryAnalysis = useCallback(async () => {
+		if (!serverId) return;
+		const result = await entryService.triggerAnalysis(serverId);
+		if (!result.success) {
+			Alert.alert("Lỗi", "Không thể kích hoạt phân tích. Vui lòng thử lại.");
+			return;
+		}
+		await updateAnalysisStatus(id, "PROCESSING");
+		setCurrentEntry((prev) => (prev ? { ...prev, analysisStatus: "PROCESSING" } : prev));
+	}, [serverId, id]);
+
 	// ── Save status indicator ─────────────────────────────────────────────────
 
 	const SaveIndicator = useMemo(() => {
@@ -170,7 +229,7 @@ export default function EntryDetailScreen() {
 		);
 	}
 
-	if (error || !entry) {
+	if (error || !currentEntry) {
 		return (
 			<ScreenWrapper padded={false} style={styles.centered}>
 				<Text style={styles.errorText}>{error ?? "Không tìm thấy nhật ký."}</Text>
@@ -186,7 +245,7 @@ export default function EntryDetailScreen() {
 		PROCESSING: colors.status.info,
 		COMPLETED: colors.status.success,
 		FAILED: colors.status.error,
-	}[entry.analysisStatus] ?? colors.text.muted;
+	}[currentEntry.analysisStatus] ?? colors.text.muted;
 
 	return (
 		<ScreenWrapper padded={false}>
@@ -218,13 +277,53 @@ export default function EntryDetailScreen() {
 					keyboardShouldPersistTaps="handled"
 					showsVerticalScrollIndicator={false}>
 
-					{/* Analysis status */}
-					<View style={styles.statusRow}>
+					{/* Analysis status — tappable dropdown when COMPLETED */}
+					<Pressable
+						style={styles.statusRow}
+						onPress={
+							currentEntry.analysisStatus === "COMPLETED" && currentEntry.emotionAnalysis
+								? toggleAnalysis
+								: undefined
+						}
+						accessibilityRole={
+							currentEntry.analysisStatus === "COMPLETED" && currentEntry.emotionAnalysis
+								? "button"
+								: undefined
+						}
+						accessibilityLabel={
+							currentEntry.analysisStatus === "COMPLETED" && currentEntry.emotionAnalysis
+								? isAnalysisExpanded
+									? "Ẩn phân tích cảm xúc"
+									: "Xem phân tích cảm xúc"
+								: undefined
+						}>
 						<View style={[styles.statusDot, { backgroundColor: statusColor }]} />
 						<Text style={[styles.statusText, { color: statusColor }]}>
-							{ANALYSIS_STATUS_LABELS[entry.analysisStatus] ?? entry.analysisStatus}
+							{ANALYSIS_STATUS_LABELS[currentEntry.analysisStatus] ?? currentEntry.analysisStatus}
 						</Text>
-					</View>
+						{currentEntry.analysisStatus === "COMPLETED" && currentEntry.emotionAnalysis && (
+							<Animated.View style={chevronAnimStyle}>
+								<Ionicons name="chevron-down" size={s(14)} color={statusColor} />
+							</Animated.View>
+						)}
+					</Pressable>
+
+					{/* Emotion analysis result (FR-10) */}
+					{currentEntry.analysisStatus === "COMPLETED" && currentEntry.emotionAnalysis && (
+						<Animated.View style={cardAnimStyle}>
+							<EmotionAnalysisCard analysis={currentEntry.emotionAnalysis} />
+						</Animated.View>
+					)}
+
+					{/* Retry analysis button (FR-10) */}
+					{currentEntry.analysisStatus === "FAILED" && serverId && (
+						<Button
+							title="Phân tích lại"
+							onPress={() => void handleRetryAnalysis()}
+							variant="outline"
+							size="sm"
+						/>
+					)}
 
 					{/* Title */}
 					<TextInput
@@ -243,7 +342,7 @@ export default function EntryDetailScreen() {
 					{/* Content — rich text editor (FR-06) */}
 					<RichTextEditor
 						ref={editorRef}
-						initialDelta={entry.content}
+						initialDelta={currentEntry.content}
 						placeholder="Nội dung nhật ký..."
 						minHeight={vs(300)}
 						onChange={(delta) => {
@@ -350,6 +449,7 @@ function createStyles(colors: ThemeColors) {
 			alignItems: "center",
 			gap: s(4),
 			marginBottom: SPACING[12],
+			alignSelf: "flex-start",
 		},
 		statusDot: {
 			width: s(6),

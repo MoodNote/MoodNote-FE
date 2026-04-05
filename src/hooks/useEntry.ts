@@ -20,6 +20,7 @@ export function useEntry(id: string): UseEntryResult {
 	const [entry, setEntry] = useState<Entry | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [serverId, setServerId] = useState<string | null>(null);
 
 	const isOnlineRef = useRef(isOnline);
 	useEffect(() => {
@@ -37,26 +38,36 @@ export function useEntry(id: string): UseEntryResult {
 				if (!cancelled) {
 					if (local) {
 						setEntry(local);
-						// If content is a stub from list sync, fetch full content from server
-						if (!local.contentFetched && isOnlineRef.current) {
-							const serverId = await getEntryServerId(id);
-							if (serverId) {
-								const res = await entryService.getById(serverId);
-								if (!res.success) {
-									logError(res.error, { context: "useEntry.fetchFullContent" });
-									// Non-fatal — continue showing stub content
-								} else {
-									await upsertFromServer(res.data.entry);
-									const refreshed = await getEntryById(id);
-									if (!cancelled && refreshed) setEntry(refreshed);
-								}
+						// Resolve and store serverId for polling and sync
+						const sid = await getEntryServerId(id);
+						if (!cancelled) setServerId(sid);
+						// Fetch full content from server if:
+						// - content is a stub (list sync), OR
+						// - analysis is COMPLETED but emotionAnalysis is missing (e.g. newly migrated DB)
+						const needsServerFetch =
+							(!local.contentFetched ||
+								(local.analysisStatus === "COMPLETED" && !local.emotionAnalysis)) &&
+							isOnlineRef.current &&
+							sid;
+						if (needsServerFetch) {
+							const res = await entryService.getById(sid);
+							if (!res.success) {
+								logError(res.error, { context: "useEntry.fetchFullContent" });
+								// Non-fatal — continue showing local data
+							} else {
+								await upsertFromServer(res.data.entry);
+								const refreshed = await getEntryById(id);
+								if (!cancelled && refreshed) setEntry(refreshed);
 							}
 						}
 					} else if (isOnlineRef.current) {
 						const res = await entryService.getById(id);
 						if (!cancelled) {
 							if (!res.success) setError(res.error);
-							else setEntry(res.data.entry);
+							else {
+								setEntry(res.data.entry);
+								setServerId(res.data.entry.id);
+							}
 						}
 					} else {
 						setError("Entry not found");
@@ -146,5 +157,5 @@ export function useEntry(id: string): UseEntryResult {
 		}
 	}, [id]);
 
-	return { entry, isLoading, error, updateEntry, deleteEntry };
+	return { entry, isLoading, error, serverId, updateEntry, deleteEntry };
 }

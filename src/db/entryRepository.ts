@@ -1,6 +1,7 @@
 // NFR-04: All SQL operations against the entries table
 
 import type {
+	EmotionAnalysis,
 	EntryListItem,
 	Entry,
 	EntryUpdatePatch,
@@ -51,6 +52,9 @@ function rowToEntry(row: LocalEntryRow): Entry {
 	const tags = JSON.parse(row.tags) as string[];
 	const content = JSON.parse(row.content) as Entry["content"];
 	const isOffline = row.sync_status !== "synced";
+	const emotionAnalysis = row.emotion_analysis
+		? (JSON.parse(row.emotion_analysis) as EmotionAnalysis)
+		: null;
 	return {
 		id: row.local_id,
 		title: row.title,
@@ -61,6 +65,7 @@ function rowToEntry(row: LocalEntryRow): Entry {
 		wordCount: row.word_count,
 		isPrivate: row.is_private === 1,
 		analysisStatus: row.analysis_status as Entry["analysisStatus"],
+		emotionAnalysis,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 		isOffline,
@@ -227,14 +232,17 @@ export async function upsertFromServer(serverEntry: Entry): Promise<void> {
 
 	const contentJson = JSON.stringify(serverEntry.content);
 	const tagsJson = JSON.stringify(serverEntry.tags);
+	const emotionAnalysisJson = serverEntry.emotionAnalysis
+		? JSON.stringify(serverEntry.emotionAnalysis)
+		: null;
 
 	if (!existing) {
 		// New from server — insert as synced, local_id = server_id
 		await db.runAsync(
 			`INSERT OR IGNORE INTO entries
         (local_id, server_id, title, content, entry_date, input_method, tags,
-         word_count, is_private, analysis_status, sync_status, content_fetched, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', 1, ?, ?)`,
+         word_count, is_private, analysis_status, emotion_analysis, sync_status, content_fetched, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', 1, ?, ?)`,
 			serverEntry.id,
 			serverEntry.id,
 			serverEntry.title,
@@ -245,6 +253,7 @@ export async function upsertFromServer(serverEntry: Entry): Promise<void> {
 			serverEntry.wordCount,
 			serverEntry.isPrivate ? 1 : 0,
 			serverEntry.analysisStatus,
+			emotionAnalysisJson,
 			serverEntry.createdAt,
 			serverEntry.updatedAt,
 		);
@@ -253,7 +262,7 @@ export async function upsertFromServer(serverEntry: Entry): Promise<void> {
 		await db.runAsync(
 			`UPDATE entries
        SET title = ?, content = ?, entry_date = ?, tags = ?,
-           word_count = ?, is_private = ?, analysis_status = ?,
+           word_count = ?, is_private = ?, analysis_status = ?, emotion_analysis = ?,
            content_fetched = 1, updated_at = ?
        WHERE local_id = ?`,
 			serverEntry.title,
@@ -263,6 +272,7 @@ export async function upsertFromServer(serverEntry: Entry): Promise<void> {
 			serverEntry.wordCount,
 			serverEntry.isPrivate ? 1 : 0,
 			serverEntry.analysisStatus,
+			emotionAnalysisJson,
 			serverEntry.updatedAt,
 			existing.local_id,
 		);
@@ -328,17 +338,32 @@ export async function upsertListFromServer(
 	}
 }
 
-/** Update analysis_status for a synced entry (e.g. polling result). */
+/** Update analysis_status (and optionally emotionAnalysis) for a synced entry (e.g. polling result). */
 export async function updateAnalysisStatus(
 	localId: string,
 	status: string,
+	emotionAnalysis?: EmotionAnalysis | null,
 ): Promise<void> {
 	const db = getDb();
-	await db.runAsync(
-		`UPDATE entries SET analysis_status = ? WHERE local_id = ?`,
-		status,
-		localId,
-	);
+	const emotionAnalysisJson =
+		emotionAnalysis !== undefined
+			? (emotionAnalysis ? JSON.stringify(emotionAnalysis) : null)
+			: undefined;
+
+	if (emotionAnalysisJson !== undefined) {
+		await db.runAsync(
+			`UPDATE entries SET analysis_status = ?, emotion_analysis = ? WHERE local_id = ?`,
+			status,
+			emotionAnalysisJson,
+			localId,
+		);
+	} else {
+		await db.runAsync(
+			`UPDATE entries SET analysis_status = ? WHERE local_id = ?`,
+			status,
+			localId,
+		);
+	}
 }
 
 /** Marks an entry as having full content (not a stub). */

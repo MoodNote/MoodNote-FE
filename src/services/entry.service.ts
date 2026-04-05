@@ -44,4 +44,9 @@ export const entryService = {
 	bulkDelete: withErrorHandling((ids: string[]) =>
 		api.post<ApiResponse<{ deletedCount: number }>>("/entries/bulk-delete", { ids }),
 	),
+
+	// FR-10: Manually trigger emotion analysis (for PENDING/FAILED entries)
+	triggerAnalysis: withErrorHandling((id: string) =>
+		api.post<ApiResponse<null>>(`/entries/${id}/analyze`),
+	),
 };

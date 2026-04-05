@@ -18,6 +18,7 @@ export interface LocalEntryRow {
 	word_count: number;
 	is_private: number; // 0 | 1
 	analysis_status: string;
+	emotion_analysis: string | null; // JSON string → parse to EmotionAnalysis, or null
 	sync_status: SyncStatus;
 	content_fetched: number; // 0 = stub (list sync), 1 = full content
 	created_at: string;
@@ -36,6 +37,7 @@ export interface LocalEntry {
 	word_count: number;
 	is_private: number; // 0 | 1
 	analysis_status: string;
+	emotion_analysis?: string | null; // JSON string of EmotionAnalysis, or null
 	sync_status: SyncStatus;
 	content_fetched?: number; // 0 = stub, 1 = full content (default 0)
 	created_at: string;

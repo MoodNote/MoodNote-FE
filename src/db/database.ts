@@ -47,6 +47,13 @@ export async function initDatabase(): Promise<void> {
 	} catch {
 		// Column already exists — safe to ignore
 	}
+
+	// Migration: add emotion_analysis column if not yet present
+	try {
+		await db.execAsync(`ALTER TABLE entries ADD COLUMN emotion_analysis TEXT;`);
+	} catch {
+		// Column already exists — safe to ignore
+	}
 }
 
 export function getDb(): SQLite.SQLiteDatabase {

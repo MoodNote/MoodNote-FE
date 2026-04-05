@@ -17,6 +17,31 @@ export interface QuillDelta {
 	ops: DeltaOp[];
 }
 
+// ─── Emotion analysis types (FR-10) ─────────────────────────────────────────
+
+export type EmotionType =
+	| "Enjoyment"
+	| "Sadness"
+	| "Anger"
+	| "Fear"
+	| "Disgust"
+	| "Surprise"
+	| "Other";
+
+export interface EmotionAnalysis {
+	id: string;
+	entryId: string;
+	primaryEmotion: EmotionType;
+	sentimentScore: number; // -1.0 to +1.0
+	intensity: number; // 0.0–100.0
+	confidence: number | null;
+	emotionDistribution: Record<EmotionType, number> | null;
+	keywords: string[];
+	modelVersion: string | null;
+	analyzedAt: string;
+	createdAt: string;
+}
+
 // ─── Entry entities ──────────────────────────────────────────────────────────
 
 /** Full entry — returned by POST /entries, GET /entries/:id, PATCH /entries/:id */
@@ -30,6 +55,7 @@ export interface Entry {
 	wordCount: number;
 	isPrivate: boolean;
 	analysisStatus: AnalysisStatus;
+	emotionAnalysis: EmotionAnalysis | null;
 	createdAt: string;
 	updatedAt: string;
 	// NFR-04: offline fields (present on local-first entries)
@@ -112,6 +138,8 @@ export interface UseEntryResult {
 	entry: Entry | null;
 	isLoading: boolean;
 	error: string | null;
+	/** Server-side UUID (null if entry has never been synced) */
+	serverId: string | null;
 	/** Updates entry locally first, then syncs to server if online */
 	updateEntry: (payload: UpdateEntryPayload) => Promise<Entry>;
 	/** Deletes entry from local DB and server (if online). Throws on local error. */
