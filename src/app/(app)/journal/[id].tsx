@@ -29,8 +29,7 @@ import { EmotionAnalysisCard, RichTextEditor } from "@/components/journal";
 import type { RichTextEditorRef } from "@/components/journal";
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
 import { ANALYSIS_STATUS_LABELS } from "@/constants/journal";
-import { useAnalysisPolling, useAutoSave, useEntry, useForm, useSync, useThemeColors } from "@/hooks";
-import { updateAnalysisStatus } from "@/db";
+import { useAnalysisPolling, useAutoSave, useEntry, useForm, useThemeColors } from "@/hooks";
 import { entryService } from "@/services";
 import { editEntryFormSchema } from "@/schemas/entry.schemas";
 import type { ThemeColors } from "@/theme";
@@ -43,8 +42,7 @@ export default function EntryDetailScreen() {
 	const colors = useThemeColors();
 	const styles = useMemo(() => createStyles(colors), [colors]);
 
-	const { isOnline } = useSync();
-	const { entry, isLoading, error, serverId, updateEntry, deleteEntry } = useEntry(id);
+	const { entry, isLoading, error, updateEntry, deleteEntry } = useEntry(id);
 
 	// currentEntry tracks the displayed entry — starts from `entry`, updated by polling
 	const [currentEntry, setCurrentEntry] = useState(entry);
@@ -105,10 +103,8 @@ export default function EntryDetailScreen() {
 	// ── Analysis polling (FR-10) ─────────────────────────────────────────────
 
 	useAnalysisPolling({
-		serverId,
-		localId: id,
+		entryId: entry?.id ?? null,
 		currentStatus: currentEntry?.analysisStatus ?? "PENDING",
-		isOnline,
 		onUpdate: setCurrentEntry,
 	});
 
@@ -179,15 +175,14 @@ export default function EntryDetailScreen() {
 	// ── Retry analysis (FR-10) ──────────────────────────────────────────────
 
 	const handleRetryAnalysis = useCallback(async () => {
-		if (!serverId) return;
-		const result = await entryService.triggerAnalysis(serverId);
+		if (!entry?.id) return;
+		const result = await entryService.triggerAnalysis(entry.id);
 		if (!result.success) {
 			Alert.alert("Lỗi", "Không thể kích hoạt phân tích. Vui lòng thử lại.");
 			return;
 		}
-		await updateAnalysisStatus(id, "PROCESSING");
 		setCurrentEntry((prev) => (prev ? { ...prev, analysisStatus: "PROCESSING" } : prev));
-	}, [serverId, id]);
+	}, [entry?.id]);
 
 	// ── Save status indicator ─────────────────────────────────────────────────
 
@@ -316,7 +311,7 @@ export default function EntryDetailScreen() {
 					)}
 
 					{/* Retry analysis button (FR-10) */}
-					{currentEntry.analysisStatus === "FAILED" && serverId && (
+					{currentEntry.analysisStatus === "FAILED" && entry?.id && (
 						<Button
 							title="Phân tích lại"
 							onPress={() => void handleRetryAnalysis()}

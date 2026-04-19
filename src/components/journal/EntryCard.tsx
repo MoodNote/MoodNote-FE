@@ -13,8 +13,7 @@ import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import type { EntryListItem } from "@/types/entry.types";
 import { s, vs, formatDateWithWeekday } from "@/utils";
-import { ANALYSIS_STATUS_LABELS, SYNC_STATUS_LABELS, SYNC_STATUS_ICONS } from "@/constants";
-import { Ionicons } from "@expo/vector-icons";
+import { ANALYSIS_STATUS_LABELS } from "@/constants";
 import { Badge } from "../ui/display/Badge";
 import { Card } from "../ui/display/Card";
 
@@ -53,17 +52,6 @@ export function EntryCard({ entry, onPress }: Props) {
 				return colors.text.muted;
 		}
 	}, [entry.analysisStatus, colors]);
-
-	const syncColor = useMemo(() => {
-		switch (entry.syncStatus) {
-			case "synced":
-				return colors.status.success;
-			case "pending_delete":
-				return colors.status.error;
-			default:
-				return colors.status.warning;
-		}
-	}, [entry.syncStatus, colors]);
 
 	return (
 		<Pressable
@@ -110,22 +98,12 @@ export function EntryCard({ entry, onPress }: Props) {
 						</ScrollView>
 					)}
 
-					{/* Analysis status + Sync status */}
+					{/* Analysis status */}
 					<View style={styles.statusRow}>
 						<View style={styles.analysisBadge}>
 							<View style={[styles.statusDot, { backgroundColor: statusColor }]} />
 							<Text style={[styles.statusText, { color: statusColor }]}>
 								{ANALYSIS_STATUS_LABELS[entry.analysisStatus] ?? entry.analysisStatus}
-							</Text>
-						</View>
-						<View style={styles.syncBadge}>
-							<Ionicons
-								name={SYNC_STATUS_ICONS[entry.syncStatus] as never ?? "sync-outline"}
-								size={s(11)}
-								color={syncColor}
-							/>
-							<Text style={[styles.statusText, { color: syncColor }]}>
-								{SYNC_STATUS_LABELS[entry.syncStatus] ?? entry.syncStatus}
 							</Text>
 						</View>
 					</View>
@@ -173,11 +151,6 @@ function createStyles(colors: ThemeColors) {
 			marginTop: SPACING[8],
 		},
 		analysisBadge: {
-			flexDirection: "row",
-			alignItems: "center",
-			gap: s(4),
-		},
-		syncBadge: {
 			flexDirection: "row",
 			alignItems: "center",
 			gap: s(4),

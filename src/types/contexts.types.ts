@@ -1,4 +1,4 @@
-// Context value shapes — consumed by useAuth, useThemeContext, useSync
+// Context value shapes — consumed by useAuth, useThemeContext
 
 import type { RegisterFormValues } from "@/schemas";
 import type { ColorScheme, ThemeColors } from "@/theme/tokens";
@@ -40,15 +40,3 @@ export interface ThemeContextValue {
 	toggleTheme: () => void;
 }
 
-// ─── Sync ──────────────────────────────────────────────────────────────────────
-
-export interface SyncContextValue {
-	isOnline: boolean;
-	isSyncing: boolean;
-	pendingCount: number;
-	failedCount: number; // entries that hit MAX_RETRY and need user attention
-	lastSyncedAt: Date | null;
-	syncNow: () => Promise<void>;
-	retryFailed: () => Promise<void>; // reset retry counters + re-trigger sync
-	refreshPendingCount: () => Promise<void>;
-}

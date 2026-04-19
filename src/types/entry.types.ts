@@ -3,9 +3,6 @@
 export type AnalysisStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
 export type InputMethod = "TEXT" | "VOICE";
 
-// Re-export for convenience — components only need @/types
-export type { SyncStatus } from "./offline.types";
-
 // ─── Quill Delta format (FR-06: content format) ─────────────────────────────
 
 export interface DeltaOp {
@@ -58,11 +55,6 @@ export interface Entry {
 	emotionAnalysis: EmotionAnalysis | null;
 	createdAt: string;
 	updatedAt: string;
-	// NFR-04: offline fields (present on local-first entries)
-	isOffline?: boolean;
-	syncStatus?: import("./offline.types").SyncStatus;
-	/** True when full QuillDelta content has been stored locally; false for list-sync stubs */
-	contentFetched?: boolean;
 }
 
 /** Partial emotion analysis returned inline with list items */
@@ -86,9 +78,6 @@ export interface EntryListItem {
 	emotionAnalysis: EntryListEmotionAnalysis | null;
 	createdAt: string;
 	updatedAt: string;
-	// NFR-04: offline fields
-	isOffline: boolean;
-	syncStatus: import("./offline.types").SyncStatus;
 }
 
 /** Pagination metadata from GET /entries response */
@@ -138,7 +127,6 @@ export interface UseEntriesResult {
 	error: string | null;
 	refresh: () => Promise<void>;
 	loadMore: () => Promise<void>;
-	/** Removes entry from local DB and server (if online). Returns after local write. */
 	removeEntry: (id: string) => Promise<void>;
 }
 
@@ -146,10 +134,6 @@ export interface UseEntryResult {
 	entry: Entry | null;
 	isLoading: boolean;
 	error: string | null;
-	/** Server-side UUID (null if entry has never been synced) */
-	serverId: string | null;
-	/** Updates entry locally first, then syncs to server if online */
 	updateEntry: (payload: UpdateEntryPayload) => Promise<Entry>;
-	/** Deletes entry from local DB and server (if online). Throws on local error. */
 	deleteEntry: () => Promise<void>;
 }

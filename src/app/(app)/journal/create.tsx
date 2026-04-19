@@ -2,7 +2,7 @@
 
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
 	ActivityIndicator,
 	Alert,
@@ -22,18 +22,9 @@ import { Button } from "@/components/ui/buttons/Button";
 import { RichTextEditor } from "@/components/journal";
 import type { RichTextEditorRef } from "@/components/journal";
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
-import {
-	insertEntry,
-	markSynced,
-	markUpdateSynced,
-	updateEntry as dbUpdateEntry,
-	getEntryServerId,
-} from "@/db";
-import { useAutoSave, useForm, useSync, useThemeColors } from "@/hooks";
+import { useAutoSave, useForm, useThemeColors } from "@/hooks";
 import { entryService } from "@/services";
-import { logError } from "@/utils/error";
 import { createEntryFormSchema } from "@/schemas/entry.schemas";
-import { randomUUID } from "expo-crypto";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import { s, vs, htmlToText } from "@/utils";
@@ -42,13 +33,8 @@ import type { QuillDelta } from "@/types/entry.types";
 export default function CreateEntryScreen() {
 	const colors = useThemeColors();
 	const styles = useMemo(() => createStyles(colors), [colors]);
-	const { isOnline } = useSync();
-	const isOnlineRef = useRef(isOnline);
-	useEffect(() => {
-		isOnlineRef.current = isOnline;
-	}, [isOnline]);
 
-	// Tracks the local entry ID after first save — null = not yet created
+	// Tracks the server entry ID after first save — null = not yet created
 	const entryIdRef = useRef<string | null>(null);
 	const [tagInput, setTagInput] = useState("");
 	const [contentDirty, setContentDirty] = useState(false);
@@ -75,79 +61,24 @@ export default function CreateEntryScreen() {
 		const title = watch("title") ?? "";
 		const tags = watch("tags") ?? [];
 		const today = new Date().toISOString().split("T")[0];
-		const now = new Date().toISOString();
-
-		const text = deltaRef.current.ops
-			.map((op) => (typeof op.insert === "string" ? op.insert : ""))
-			.join("")
-			.trim();
-		const wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
 
 		if (entryIdRef.current === null) {
-			// First save — write to local DB immediately (NFR-04)
-			const localId = randomUUID();
-			await insertEntry({
-				local_id: localId,
+			const result = await entryService.create({
+				content: deltaRef.current,
 				title: title.trim() || undefined,
-				content: JSON.stringify(deltaRef.current),
-				entry_date: today,
-				input_method: "TEXT",
-				tags: JSON.stringify(tags),
-				word_count: wordCount,
-				is_private: 0,
-				analysis_status: "PENDING",
-				sync_status: "pending_create",
-				created_at: now,
-				updated_at: now,
+				tags,
+				entryDate: today,
+				inputMethod: "TEXT",
 			});
-			entryIdRef.current = localId;
-
-			// Background server create if online
-			if (isOnlineRef.current) {
-				const result = await entryService.create({
-					content: deltaRef.current,
-					title: title.trim() || undefined,
-					tags,
-					entryDate: today,
-					inputMethod: "TEXT",
-				});
-				if (!result.success) {
-					logError(result.error, { context: "create.tsx saveFn server create" });
-				} else {
-					await markSynced(
-						localId,
-						result.data.entry.id,
-						result.data.entry.analysisStatus,
-					);
-				}
-			}
+			if (!result.success) throw new Error(result.error ?? "Failed to create entry");
+			entryIdRef.current = result.data.entry.id;
 		} else {
-			// Subsequent save — update local DB immediately
-			await dbUpdateEntry(entryIdRef.current, {
-				title: title.trim() || null,
-				content: JSON.stringify(deltaRef.current),
-				tags: JSON.stringify(tags),
-				word_count: wordCount,
-				updated_at: now,
+			const result = await entryService.update(entryIdRef.current, {
+				content: deltaRef.current,
+				title: title.trim() || undefined,
+				tags,
 			});
-
-			// Background server update if online
-			if (isOnlineRef.current) {
-				const serverId = await getEntryServerId(entryIdRef.current);
-				if (serverId) {
-					const currentId = entryIdRef.current;
-					entryService
-						.update(serverId, {
-							content: deltaRef.current,
-							title: title.trim() || undefined,
-							tags,
-						})
-						.then((result) => {
-							if (result.success) return markUpdateSynced(currentId);
-							logError(result.error, { context: "create.tsx saveFn server update" });
-						});
-				}
-			}
+			if (!result.success) throw new Error(result.error ?? "Failed to update entry");
 		}
 	}, [watch]);
 

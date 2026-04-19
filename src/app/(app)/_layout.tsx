@@ -2,7 +2,7 @@ import { Stack } from "expo-router";
 import { useEffect } from "react";
 
 import { ProtectedRoute } from "@/components/navigation";
-import { NetworkBanner, NotificationPopupProvider, useNotificationPopup } from "@/components/ui/feedback";
+import { NotificationPopupProvider, useNotificationPopup } from "@/components/ui/feedback";
 import { getInitialNotification, getMessaging, onMessage, onNotificationOpenedApp } from "@react-native-firebase/messaging";
 import { useNotificationStore } from "@/store";
 import { ROUTES } from "@/constants";
@@ -59,7 +59,6 @@ function AppContent() {
 					options={{ animation: "slide_from_right" }}
 				/>
 			</Stack>
-			<NetworkBanner />
 		</View>
 	);
 }
