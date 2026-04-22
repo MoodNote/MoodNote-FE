@@ -120,8 +120,8 @@ export default function HomeScreen() {
 							title="Playlist gần đây"
 							action={{ label: "xem thêm", onPress: handleViewPlaylist }}
 						/>
-						{tracks.map(({ track }) => (
-							<PlaylistTrackItem key={track.id} track={track} />
+						{tracks.map(({ order, track }) => (
+							<PlaylistTrackItem key={track.id} order={order} track={track} />
 						))}
 					</View>
 				)}
@@ -132,16 +132,12 @@ export default function HomeScreen() {
 
 function createStyles(colors: ThemeColors) {
 	return StyleSheet.create({
-		safeArea: {
-			flex: 1,
-			backgroundColor: colors.background.primary,
-		},
 		scroll: {
 			flex: 1,
 		},
 		content: {
 			paddingHorizontal: SPACING[16],
-			paddingBottom: vs(32),
+			paddingBottom: vs(60),
 		},
 		header: {
 			alignItems: "center",

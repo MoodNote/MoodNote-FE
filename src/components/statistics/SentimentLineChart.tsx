@@ -1,9 +1,19 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { CartesianChart, Line, useAreaPath, type ChartBounds, type PointsArray } from "victory-native";
+import { CartesianChart, Line, useAreaPath, useLinePath, type ChartBounds, type PointsArray } from "victory-native";
 import { LinearGradient, Path, vec } from "@shopify/react-native-skia";
+import Animated, { FadeIn, useSharedValue, withTiming, Easing, type SharedValue } from "react-native-reanimated";
+import {
+	SmileyIcon,
+	SmileySadIcon,
+	SmileyAngryIcon,
+	SmileyNervousIcon,
+	SmileyWinkIcon,
+	SmileyXEyesIcon,
+	SmileyBlankIcon,
+	type Icon,
+} from "phosphor-react-native";
 
-import { EMOTION_EMOJI } from "@/constants";
 import { useThemeColors } from "@/hooks";
 import { FONT_SIZE, LINE_HEIGHT, SPACING } from "@/theme";
 import type { ThemeColors } from "@/theme";
@@ -23,7 +33,6 @@ type ChartDatum = {
 	mainScore: number | null;
 };
 
-/** Map abbreviated label to full Vietnamese form for chart X-axis */
 const DAY_FULL_LABEL: Record<string, string> = {
 	T2: "Thứ 2",
 	T3: "Thứ 3",
@@ -34,10 +43,29 @@ const DAY_FULL_LABEL: Record<string, string> = {
 	CN: "CN",
 };
 
-/** Sentiment domain bounds — extra padding for visual breathing room */
 const DOMAIN_MIN = -1.2;
 const DOMAIN_MAX = 1.2;
 const DOMAIN_RANGE = DOMAIN_MAX - DOMAIN_MIN;
+
+const EMOTION_TO_MOOD_KEY: Record<EmotionType, keyof ThemeColors["mood"]> = {
+	Enjoyment: "enjoyment",
+	Sadness: "sadness",
+	Anger: "anger",
+	Fear: "fear",
+	Disgust: "disgust",
+	Surprise: "surprise",
+	Other: "other",
+};
+
+const EMOTION_ICON: Record<EmotionType, Icon> = {
+	Enjoyment: SmileyIcon,
+	Sadness: SmileySadIcon,
+	Anger: SmileyAngryIcon,
+	Fear: SmileyNervousIcon,
+	Surprise: SmileyWinkIcon,
+	Disgust: SmileyXEyesIcon,
+	Other: SmileyBlankIcon,
+};
 
 interface GradientAreaProps {
 	points: PointsArray;
@@ -45,17 +73,13 @@ interface GradientAreaProps {
 	startColor: string;
 	endColor: string;
 	chartBounds: ChartBounds;
+	opacity: SharedValue<number>;
 }
 
-/**
- * Renders a gradient-filled area below the given line path.
- * Must be a separate React component so hooks (useAreaPath) can run inside
- * the Skia Canvas render context of CartesianChart.
- */
-function GradientArea({ points, y0, startColor, endColor, chartBounds }: GradientAreaProps) {
+function GradientArea({ points, y0, startColor, endColor, chartBounds, opacity }: GradientAreaProps) {
 	const { path } = useAreaPath(points, y0, { curveType: "natural", connectMissingData: false });
 	return (
-		<Path path={path} style="fill">
+		<Path path={path} style="fill" opacity={opacity}>
 			<LinearGradient
 				start={vec(0, chartBounds.top)}
 				end={vec(0, y0)}
@@ -65,14 +89,43 @@ function GradientArea({ points, y0, startColor, endColor, chartBounds }: Gradien
 	);
 }
 
+interface AnimatedMainLineProps {
+	points: PointsArray;
+	color: string;
+	strokeWidth: number;
+	drawProgress: SharedValue<number>;
+}
+
+/**
+ * Renders the main sentiment line with a left-to-right draw animation.
+ * Must be a separate component so useLinePath hook runs inside the Skia canvas context.
+ */
+function AnimatedMainLine({ points, color, strokeWidth, drawProgress }: AnimatedMainLineProps) {
+	const { path } = useLinePath(points, { curveType: "natural", connectMissingData: false });
+	return (
+		<Path
+			path={path}
+			style="stroke"
+			strokeWidth={strokeWidth}
+			color={color}
+			end={drawProgress}
+			strokeCap="round"
+			strokeJoin="round"
+		/>
+	);
+}
+
 export function SentimentLineChart({ days, width, height = vs(180) }: Props) {
 	const colors = useThemeColors();
 	const styles = useMemo(() => createStyles(colors), [colors]);
 
-	/** Capture chartBounds from CartesianChart to compute emoji pixel positions */
+	const drawProgress = useSharedValue(0);
+	useEffect(() => {
+		drawProgress.value = withTiming(1, { duration: 1100, easing: Easing.out(Easing.cubic) });
+	}, [drawProgress]);
+
 	const [chartBounds, setChartBounds] = useState<ChartBounds | null>(null);
 
-	/** Build the unified data array for CartesianChart */
 	const chartData = useMemo<ChartDatum[]>(() => {
 		return days.map((day, i) => ({
 			dayIndex: i,
@@ -81,10 +134,6 @@ export function SentimentLineChart({ days, width, height = vs(180) }: Props) {
 		}));
 	}, [days]);
 
-	/**
-	 * Compute absolute pixel positions for emoji overlays.
-	 * chartBounds gives us the pixel extent of the data domain.
-	 */
 	const emojiPositions = useMemo<
 		{ x: number; y: number; emotion: EmotionType; date: string }[]
 	>(() => {
@@ -104,13 +153,11 @@ export function SentimentLineChart({ days, width, height = vs(180) }: Props) {
 	}, [chartBounds, days]);
 
 	const brandColor = colors.brand.primary;
-	/** Hex colors with alpha for Skia LinearGradient */
-	const gradientStart = `${brandColor}4D`; // ~30% opacity
-	const gradientEnd = `${brandColor}00`; // 0% opacity
+	const gradientStart = `${brandColor}4D`;
+	const gradientEnd = `${brandColor}00`;
 
 	return (
 		<View>
-			{/* Chart canvas — wrapper View gives CartesianChart explicit dimensions */}
 			<View style={{ height, width }}>
 				<CartesianChart
 					data={chartData}
@@ -121,7 +168,7 @@ export function SentimentLineChart({ days, width, height = vs(180) }: Props) {
 					onChartBoundsChange={setChartBounds}>
 					{({ points, chartBounds: bounds }) => (
 						<>
-							{/* Gray reference curve — all 7 days, 0 for missing */}
+							{/* Gray reference curve — static background guide */}
 							<Line
 								points={points.refScore}
 								color={colors.border.subtle}
@@ -130,44 +177,46 @@ export function SentimentLineChart({ days, width, height = vs(180) }: Props) {
 								opacity={0.55}
 							/>
 
-							{/* Gradient area fill beneath the main entry curve */}
+							{/* Gradient area — fades in alongside the line drawing */}
 							<GradientArea
 								points={points.mainScore}
 								y0={bounds.bottom}
 								startColor={gradientStart}
 								endColor={gradientEnd}
 								chartBounds={bounds}
+								opacity={drawProgress}
 							/>
 
-							{/* Main entry curve — animated, breaks at null (missing days) */}
-							<Line
+							{/* Main entry curve — draws from left to right */}
+							<AnimatedMainLine
 								points={points.mainScore}
 								color={brandColor}
 								strokeWidth={s(3)}
-								curveType="natural"
-								animate={{ type: "timing", duration: 800 }}
+								drawProgress={drawProgress}
 							/>
 						</>
 					)}
 				</CartesianChart>
 
-				{/* Emoji overlays — React Native elements positioned over the Skia canvas */}
+				{/* Icon overlays — fade in after line finishes drawing */}
 				{emojiPositions.map((p) => {
-					const emoji = EMOTION_EMOJI[p.emotion];
-					const emojiSize = s(28);
+					const IconComponent = EMOTION_ICON[p.emotion];
+					const iconColor = colors.mood[EMOTION_TO_MOOD_KEY[p.emotion]];
+					const iconSize = s(28);
 					return (
-						<View
+						<Animated.View
 							key={p.date}
+							entering={FadeIn.delay(900).duration(300)}
 							style={[
-								styles.emojiOverlay,
+								styles.iconOverlay,
 								{
-									left: p.x - emojiSize / 2,
-									top: p.y - emojiSize - vs(4),
+									left: p.x - iconSize / 2,
+									top: p.y - iconSize - vs(4),
 								},
 							]}
 							pointerEvents="none">
-							<Text style={styles.emojiText}>{emoji}</Text>
-						</View>
+							<IconComponent size={iconSize} color={iconColor} weight="fill" />
+						</Animated.View>
 					);
 				})}
 			</View>
@@ -188,11 +237,8 @@ export function SentimentLineChart({ days, width, height = vs(180) }: Props) {
 
 function createStyles(colors: ThemeColors) {
 	return StyleSheet.create({
-		emojiOverlay: {
+		iconOverlay: {
 			position: "absolute",
-		},
-		emojiText: {
-			fontSize: s(26),
 		},
 		labelsRow: {
 			flexDirection: "row",

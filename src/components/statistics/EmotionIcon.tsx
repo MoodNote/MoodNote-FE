@@ -1,7 +1,16 @@
 import { useMemo } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import {
+	SmileyIcon,
+	SmileySadIcon,
+	SmileyAngryIcon,
+	SmileyNervousIcon,
+	SmileyWinkIcon,
+	SmileyXEyesIcon,
+	SmileyBlankIcon,
+	type Icon,
+} from "phosphor-react-native";
 
-import { EMOTION_EMOJI } from "@/constants";
 import { useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
 import type { EmotionType } from "@/types/entry.types";
@@ -22,28 +31,37 @@ const EMOTION_TO_MOOD_KEY: Record<EmotionType, keyof ThemeColors["mood"]> = {
 	Other: "other",
 };
 
+const EMOTION_ICON: Record<EmotionType, Icon> = {
+	Enjoyment: SmileyIcon,
+	Sadness: SmileySadIcon,
+	Anger: SmileyAngryIcon,
+	Fear: SmileyNervousIcon,
+	Surprise: SmileyWinkIcon,
+	Disgust: SmileyXEyesIcon,
+	Other: SmileyBlankIcon,
+};
+
 export function EmotionIcon({ emotion, size = 36 }: Props) {
 	const colors = useThemeColors();
 	const styles = useMemo(() => createStyles(colors, size), [colors, size]);
 
 	if (emotion == null) {
-		// Days without an entry: subtle empty circle, no emoji
 		return <View style={styles.emptyCircle} />;
 	}
 
-	const emoji = EMOTION_EMOJI[emotion];
+	const IconComponent = EMOTION_ICON[emotion];
 	const borderColor = colors.mood[EMOTION_TO_MOOD_KEY[emotion]];
+	const iconSize = s(size * 0.62);
 
 	return (
 		<View style={[styles.circle, { borderColor }]}>
-			<Text style={styles.emoji}>{emoji}</Text>
+			<IconComponent size={iconSize} color={borderColor} weight="fill" />
 		</View>
 	);
 }
 
 function createStyles(colors: ThemeColors, size: number) {
 	const circleSize = s(size);
-	// Scale border width with size — thinner for small calendar icons
 	const borderWidth = size >= 30 ? 2 : 1.5;
 	return StyleSheet.create({
 		circle: {
@@ -61,11 +79,6 @@ function createStyles(colors: ThemeColors, size: number) {
 			borderRadius: circleSize / 2,
 			borderWidth,
 			borderColor: colors.border.subtle,
-			// transparent background — blends with parent surface
-		},
-		emoji: {
-			// 0.62 ratio fills the circle well at all sizes
-			fontSize: s(size * 0.62),
 		},
 	});
 }

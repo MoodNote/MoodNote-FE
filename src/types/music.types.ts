@@ -19,16 +19,7 @@ export interface Track extends TrackSimple {
 	tempo: number | null;
 }
 
-// Returned by GET /music/recent (no audio features)
-export interface RecentMusicRecommendation {
-	id: string;
-	entryId: string;
-	mode: RecommendationMode;
-	generatedAt: string;
-	tracks: { order: number; track: TrackSimple }[];
-}
-
-// Returned by GET /music/entries/:entryId/recommendation and POST .../refresh
+// Returned by GET /music/recent, GET /music/entries/:entryId/recommendation, and POST .../refresh
 export interface MusicRecommendation {
 	id: string;
 	entryId: string;

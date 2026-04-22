@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import Animated, { FadeInUp } from "react-native-reanimated";
 
 import { useThemeColors } from "@/hooks";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
@@ -18,11 +19,14 @@ export function WeeklyOverview({ days }: Props) {
 
 	return (
 		<View style={styles.container}>
-			{days.map((day) => (
-				<View key={day.date} style={styles.dayBox}>
+			{days.map((day, index) => (
+				<Animated.View
+					key={day.date}
+					entering={FadeInUp.delay(index * 55).duration(320).springify().damping(14)}
+					style={styles.dayBox}>
 					<EmotionIcon emotion={day.emotion} size={34} />
 					<Text style={styles.label}>{day.dayLabel}</Text>
-				</View>
+				</Animated.View>
 			))}
 		</View>
 	);

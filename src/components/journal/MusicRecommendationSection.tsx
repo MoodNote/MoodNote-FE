@@ -131,7 +131,7 @@ export function MusicRecommendationSection({ entryId, musicStatus }: Props) {
 		contentBody = (
 			<View>
 				{recommendation.tracks.map((item) => (
-					<PlaylistTrackItem key={String(item.order)} track={item.track} />
+					<PlaylistTrackItem key={String(item.order)} order={item.order} track={item.track} />
 				))}
 			</View>
 		);

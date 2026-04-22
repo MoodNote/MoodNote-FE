@@ -2,13 +2,13 @@
 
 import { apiService as api } from "@/lib/api";
 import type { ApiResponse } from "@/types";
-import type { MusicRecommendation, RecentMusicRecommendation } from "@/types/music.types";
+import type { MusicRecommendation } from "@/types/music.types";
 import { withErrorHandling } from "@/utils/error";
 
 export const musicService = {
-	// GET /music/recent?limit=5 → most recent playlist recommendation (TrackSimple, no audio features)
+	// GET /music/recent?limit=5 → most recent playlist recommendation (full Track with audio features)
 	getRecent: withErrorHandling((limit = 5) =>
-		api.get<ApiResponse<{ recommendation: RecentMusicRecommendation | null }>>("/music/recent", {
+		api.get<ApiResponse<{ recommendation: MusicRecommendation | null }>>("/music/recent", {
 			params: { limit },
 		}),
 	),

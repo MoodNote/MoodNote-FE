@@ -2,7 +2,9 @@
 
 import { useCallback, useMemo } from "react";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import Animated, { FadeInUp } from "react-native-reanimated";
 import { CartesianChart, Line } from "victory-native";
+import { TrendUpIcon, TrendDownIcon, ArrowRightIcon, type Icon } from "phosphor-react-native";
 
 import { useEmotionChart, useThemeColors } from "@/hooks";
 import { SkeletonLoader } from "@/components/ui/feedback";
@@ -20,15 +22,21 @@ const RANGES: { label: string; value: ChartRange }[] = [
 ];
 
 const TREND_LABELS: Record<string, string> = {
-	up: "↑ Tích cực hơn",
-	down: "↓ Tiêu cực hơn",
-	stable: "→ Ổn định",
+	up: "Tích cực hơn",
+	down: "Tiêu cực hơn",
+	stable: "Ổn định",
 };
 
 const TREND_COLOR_KEY: Record<string, "success" | "error" | "muted"> = {
 	up: "success",
 	down: "error",
 	stable: "muted",
+};
+
+const TREND_ICONS: Record<string, Icon> = {
+	up: TrendUpIcon,
+	down: TrendDownIcon,
+	stable: ArrowRightIcon,
 };
 
 type ChartDatum = { index: number; score: number };
@@ -67,12 +75,12 @@ export function EmotionChartSection() {
 
 	if (error != null || data == null) {
 		return (
-			<View style={styles.container}>
+			<Animated.View entering={FadeInUp.delay(150).duration(400)} style={styles.container}>
 				<Text style={styles.title}>Xu hướng cảm xúc</Text>
 				<View style={styles.emptyBox}>
 					<Text style={styles.emptyText}>{error ?? "Chưa có dữ liệu."}</Text>
 				</View>
-			</View>
+			</Animated.View>
 		);
 	}
 
@@ -83,8 +91,10 @@ export function EmotionChartSection() {
 				? colors.status.error
 				: colors.text.muted;
 
+	const TrendIcon = TREND_ICONS[data.summary.trend] ?? ArrowRightIcon;
+
 	return (
-		<View style={styles.container}>
+		<Animated.View entering={FadeInUp.delay(150).duration(400)} style={styles.container}>
 			<View style={styles.header}>
 				<Text style={styles.title}>Xu hướng cảm xúc</Text>
 				<View style={styles.rangeSelector}>
@@ -112,7 +122,8 @@ export function EmotionChartSection() {
 						</Text>
 					</View>
 				)}
-				<View style={[styles.summaryChip, { borderColor: trendColor }]}>
+				<View style={[styles.summaryChip, styles.summaryChipRow, { borderColor: trendColor }]}>
+					<TrendIcon size={s(12)} color={trendColor} weight="bold" />
 					<Text style={[styles.summaryChipText, { color: trendColor }]}>
 						{TREND_LABELS[data.summary.trend] ?? data.summary.trend}
 					</Text>
@@ -145,7 +156,7 @@ export function EmotionChartSection() {
 					<Text style={styles.emptyText}>Cần ít nhất 2 nhật ký để hiển thị biểu đồ.</Text>
 				</View>
 			)}
-		</View>
+		</Animated.View>
 	);
 }
 
@@ -199,6 +210,11 @@ function createStyles(colors: ThemeColors) {
 			borderRadius: RADIUS.full,
 			paddingHorizontal: SPACING[8],
 			paddingVertical: SPACING[2],
+		},
+		summaryChipRow: {
+			flexDirection: "row",
+			alignItems: "center",
+			gap: s(4),
 		},
 		summaryChipText: {
 			fontSize: FONT_SIZE[12],

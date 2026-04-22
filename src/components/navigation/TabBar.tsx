@@ -2,22 +2,18 @@ import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { BlurView } from "expo-blur";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AppState, Pressable, StyleSheet, View } from "react-native";
 import type { AppStateStatus } from "react-native";
-import Animated, {
-	useAnimatedStyle,
-	useSharedValue,
-	withTiming,
-} from "react-native-reanimated";
+import { AppState, Pressable, StyleSheet, View } from "react-native";
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { BAR_HEIGHT, FAB_SIZE } from "@/constants";
 import { useThemeColors, useThemeContext } from "@/hooks";
-import { useNotificationStore } from "@/store";
 import { notificationService } from "@/services/notification.service";
+import { useNotificationStore } from "@/store";
 import type { ThemeColors } from "@/theme";
 import { RADIUS, SPACING } from "@/theme";
 import { s, vs } from "@/utils";
-import { BAR_HEIGHT, FAB_SIZE } from "@/constants";
 import { AddJournalMenu } from "./AddJournalMenu";
 import { TabItem } from "./TabItem";
 
@@ -127,7 +123,10 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 			{/* Floating tab bar wrapper — positions bar above safe area */}
 			<View style={styles.wrapper} pointerEvents="box-none">
 				{/* BlurView for liquid glass effect */}
-				<BlurView intensity={60} tint={colorScheme === "dark" ? "dark" : "light"} style={styles.blurContainer}>
+				<BlurView
+					intensity={60}
+					tint={colorScheme === "dark" ? "dark" : "light"}
+					style={styles.blurContainer}>
 					{/* Semi-transparent overlay for glass tint */}
 					<View style={styles.overlay}>
 						{/* Left tabs */}
@@ -197,7 +196,7 @@ function createStyles(colors: ThemeColors, bottomInset: number) {
 		},
 		fab: {
 			position: "absolute",
-			top: -(FAB_SIZE / 2 + vs(8)),
+			top: -(FAB_SIZE / 2 - vs(8)),
 			width: FAB_SIZE,
 			height: FAB_SIZE,
 			borderRadius: RADIUS.full,
