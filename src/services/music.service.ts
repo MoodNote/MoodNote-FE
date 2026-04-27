@@ -6,9 +6,9 @@ import type { MusicRecommendation } from "@/types/music.types";
 import { withErrorHandling } from "@/utils/error";
 
 export const musicService = {
-	// GET /music/recent?limit=5 → most recent playlist recommendation (full Track with audio features)
+	// GET /music/recent?limit=5 → recent playlist recommendations (full Track with audio features)
 	getRecent: withErrorHandling((limit = 5) =>
-		api.get<ApiResponse<{ recommendation: MusicRecommendation | null }>>("/music/recent", {
+		api.get<ApiResponse<{ playlists: MusicRecommendation[] }>>("/music/recent", {
 			params: { limit },
 		}),
 	),

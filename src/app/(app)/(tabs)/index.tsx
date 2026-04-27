@@ -4,7 +4,7 @@ import { useCallback, useMemo } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { ScreenWrapper } from "@/components";
-import { HomeSkeleton, PlaylistTrackItem, RecentEntryItem, StreakCard } from "@/components/home";
+import { HomeSkeleton, RecentEntryItem, RecentPlaylistCard, StreakCard } from "@/components/home";
 import { SectionHeader } from "@/components/ui";
 import { ROUTES } from "@/constants";
 import { useHomeData, useThemeColors } from "@/hooks";
@@ -22,24 +22,16 @@ export default function HomeScreen() {
 		router.push(ROUTES.TAB_JOURNAL);
 	}, []);
 
-	const handleViewPlaylist = useCallback(() => {
-		if (data?.recentPlaylist?.entryId) {
-			router.push(ROUTES.JOURNAL_DETAIL(data.recentPlaylist.entryId));
-		}
-	}, [data]);
-
 	if (isLoading) {
 		return <HomeSkeleton />;
 	}
 
-	const { username, streaks, recentEntries, recentPlaylist } = data ?? {
+	const { username, streaks, recentEntries, recentPlaylists } = data ?? {
 		username: "",
 		streaks: null,
 		recentEntries: [],
-		recentPlaylist: null,
+		recentPlaylists: [],
 	};
-
-	const tracks = recentPlaylist?.tracks ?? [];
 
 	return (
 		<ScreenWrapper padded={false}>
@@ -113,15 +105,12 @@ export default function HomeScreen() {
 					)}
 				</View>
 
-				{/* Recent playlist */}
-				{recentPlaylist != null && tracks.length > 0 && (
+				{/* Recent playlists */}
+				{recentPlaylists.length > 0 && (
 					<View style={styles.section}>
-						<SectionHeader
-							title="Playlist gần đây"
-							action={{ label: "xem thêm", onPress: handleViewPlaylist }}
-						/>
-						{tracks.map(({ order, track }) => (
-							<PlaylistTrackItem key={track.id} order={order} track={track} />
+						<SectionHeader title="Playlist gần đây" />
+						{recentPlaylists.map((playlist) => (
+							<RecentPlaylistCard key={playlist.id} playlist={playlist} />
 						))}
 					</View>
 				)}

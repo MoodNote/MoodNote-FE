@@ -11,7 +11,7 @@ interface HomeData {
 	username: string;
 	streaks: StatsSummary | null;
 	recentEntries: EntryListItem[];
-	recentPlaylist: MusicRecommendation | null;
+	recentPlaylists: MusicRecommendation[];
 }
 
 interface UseHomeDataResult {
@@ -27,14 +27,14 @@ async function fetchAllHomeData(): Promise<HomeData> {
 		userService.getMe(),
 		statsService.getSummary(),
 		entryService.getList({ limit: 3 }),
-		musicService.getRecent(5),
+		musicService.getRecent(3),
 	]);
 
 	return {
 		username: userRes.success ? userRes.data.username : "",
 		streaks: summaryRes.success ? summaryRes.data : null,
 		recentEntries: entriesRes.success ? entriesRes.data.entries : [],
-		recentPlaylist: musicRes.success ? musicRes.data.recommendation : null,
+		recentPlaylists: musicRes.success ? musicRes.data.playlists : [],
 	};
 }
 

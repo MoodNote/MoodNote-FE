@@ -63,6 +63,7 @@ export interface RecommendationDiagnostics {
 export interface MusicRecommendation {
 	id: string;
 	entryId: string;
+	title?: string; // only present in /music/recent response (decrypted entry title)
 	mode: RecommendationMode;
 	generatedAt: string;
 	diagnostics: RecommendationDiagnostics | null;

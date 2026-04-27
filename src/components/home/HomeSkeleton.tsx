@@ -10,7 +10,7 @@ import { s, vs } from "@/utils";
 
 const STREAK_CARDS = [0, 1, 2] as const;
 const ENTRY_ITEMS = [0, 1, 2] as const;
-const TRACK_ITEMS = [0, 1, 2, 3] as const;
+const PLAYLIST_CARDS = [0, 1, 2] as const;
 
 export function HomeSkeleton() {
 	const colors = useThemeColors();
@@ -79,15 +79,15 @@ export function HomeSkeleton() {
 				<View style={styles.section}>
 					<View style={styles.sectionHeader}>
 						<SkeletonLoader width={s(112)} height={vs(18)} borderRadius={RADIUS.full} />
-						<SkeletonLoader width={s(56)} height={vs(16)} borderRadius={RADIUS.full} />
 					</View>
-					{TRACK_ITEMS.map((i) => (
-						<View key={i} style={[styles.trackItem, i < TRACK_ITEMS.length - 1 && styles.trackItemBorder]}>
-							<SkeletonLoader width={s(48)} height={vs(48)} borderRadius={RADIUS.sm} />
-							<View style={styles.trackInfo}>
-								<SkeletonLoader width="70%" height={vs(16)} borderRadius={RADIUS.full} />
-								<SkeletonLoader width="50%" height={vs(13)} borderRadius={RADIUS.full} />
+					{PLAYLIST_CARDS.map((i) => (
+						<View key={i} style={styles.playlistCard}>
+							<SkeletonLoader width={s(40)} height={s(40)} borderRadius={RADIUS.sm} />
+							<View style={styles.playlistInfo}>
+								<SkeletonLoader width="60%" height={vs(16)} borderRadius={RADIUS.full} />
+								<SkeletonLoader width="40%" height={vs(13)} borderRadius={RADIUS.full} />
 							</View>
+							<SkeletonLoader width={s(48)} height={vs(22)} borderRadius={RADIUS.full} />
 						</View>
 					))}
 				</View>
@@ -166,16 +166,16 @@ function createStyles(colors: ThemeColors) {
 			gap: vs(4),
 			marginLeft: s(8),
 		},
-		trackItem: {
+		playlistCard: {
 			flexDirection: "row",
+			alignItems: "center",
 			gap: s(12),
-			paddingVertical: SPACING[10],
+			backgroundColor: colors.background.card,
+			borderRadius: RADIUS.md,
+			padding: SPACING[14],
+			marginBottom: SPACING[8],
 		},
-		trackItemBorder: {
-			borderBottomWidth: 1,
-			borderBottomColor: colors.border.subtle,
-		},
-		trackInfo: {
+		playlistInfo: {
 			flex: 1,
 			gap: vs(4),
 		},
