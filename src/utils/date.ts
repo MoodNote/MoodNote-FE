@@ -115,3 +115,22 @@ export function shiftDate(dateStr: string, days: number): string {
 	d.setDate(d.getDate() + days);
 	return d.toISOString().split("T")[0] ?? "";
 }
+
+/**
+ * Vietnamese relative-period label for grouping date-sorted lists.
+ * "Ngày hôm nay" / "Hôm qua" / "Trong tuần qua" / "Tháng trước" / "Trong năm qua" / year string.
+ * Use for: section headers in any date-grouped list.
+ */
+export function getDateSectionLabel(iso: string): string {
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
+	const date = new Date(iso);
+	date.setHours(0, 0, 0, 0);
+	const diffDays = Math.round((today.getTime() - date.getTime()) / 86_400_000);
+	if (diffDays === 0) return "Ngày hôm nay";
+	if (diffDays === 1) return "Hôm qua";
+	if (diffDays <= 7) return "Trong tuần qua";
+	if (diffDays <= 30) return "Tháng trước";
+	if (diffDays <= 365) return "Trong năm qua";
+	return String(date.getFullYear());
+}

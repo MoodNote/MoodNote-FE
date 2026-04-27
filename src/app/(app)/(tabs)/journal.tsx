@@ -24,7 +24,14 @@ import { useEntries, useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import type { EntryListItem } from "@/types/entry.types";
-import { s, vs } from "@/utils";
+import { getDateSectionLabel, s, vs } from "@/utils";
+
+type SectionHeaderItem = { type: "section"; id: string; title: string };
+type ListRow = EntryListItem | SectionHeaderItem;
+
+function isSectionHeader(item: ListRow): item is SectionHeaderItem {
+	return "type" in item && item.type === "section";
+}
 
 interface SwipeDeleteActionProps {
 	progress: SharedValue<number>;
@@ -108,6 +115,20 @@ export default function JournalScreen() {
 	const styles = useMemo(() => createStyles(colors), [colors]);
 	const { entries, isLoading, isRefreshing, loadMore, refresh, removeEntry } = useEntries();
 
+	const sectionedData = useMemo<ListRow[]>(() => {
+		const rows: ListRow[] = [];
+		let currentLabel: string | null = null;
+		for (const entry of entries) {
+			const label = getDateSectionLabel(entry.entryDate);
+			if (label !== currentLabel) {
+				rows.push({ type: "section", id: `section-${label}`, title: label });
+				currentLabel = label;
+			}
+			rows.push(entry);
+		}
+		return rows;
+	}, [entries]);
+
 	const handleDelete = useCallback(
 		(item: EntryListItem) => {
 			Alert.alert("Xoá nhật ký", "Bạn có chắc muốn xoá nhật ký này? Thao tác không thể hoàn tác.", [
@@ -123,26 +144,31 @@ export default function JournalScreen() {
 	);
 
 	const renderItem = useCallback(
-		({ item }: { item: EntryListItem }) => (
-			<View>
-				<ReanimatedSwipeable
-					renderRightActions={(progress, drag, swipeable) => (
-						<SwipeDeleteAction
-							progress={progress}
-							drag={drag}
-							swipeable={swipeable}
-							onPress={() => handleDelete(item)}
-							onAutoDelete={() => handleDelete(item)}
-						/>
-					)}
-					rightThreshold={SWIPE_DELETE_ACTION_WIDTH * 0.8}
-					overshootFriction={6}
-					friction={1.5}>
-					<EntryCard entry={item} onPress={() => router.push(ROUTES.JOURNAL_DETAIL(item.id))} />
-				</ReanimatedSwipeable>
-			</View>
-		),
-		[handleDelete],
+		({ item }: { item: ListRow }) => {
+			if (isSectionHeader(item)) {
+				return <Text style={styles.sectionHeader}>{item.title}</Text>;
+			}
+			return (
+				<View>
+					<ReanimatedSwipeable
+						renderRightActions={(progress, drag, swipeable) => (
+							<SwipeDeleteAction
+								progress={progress}
+								drag={drag}
+								swipeable={swipeable}
+								onPress={() => handleDelete(item)}
+								onAutoDelete={() => handleDelete(item)}
+							/>
+						)}
+						rightThreshold={SWIPE_DELETE_ACTION_WIDTH * 0.8}
+						overshootFriction={6}
+						friction={1.5}>
+						<EntryCard entry={item} onPress={() => router.push(ROUTES.JOURNAL_DETAIL(item.id))} />
+					</ReanimatedSwipeable>
+				</View>
+			);
+		},
+		[handleDelete, styles],
 	);
 
 	const ListEmpty = useCallback(
@@ -178,7 +204,7 @@ export default function JournalScreen() {
 
 				{/* List */}
 				<FlatList
-					data={entries}
+					data={sectionedData}
 					keyExtractor={(item) => item.id}
 					renderItem={renderItem}
 					ListEmptyComponent={isLoading ? JournalListSkeleton : ListEmpty}
@@ -230,6 +256,13 @@ function createStyles(colors: ThemeColors) {
 		},
 		listContentEmpty: {
 			flex: 1,
+		},
+		sectionHeader: {
+			fontSize: FONT_SIZE[13],
+			fontWeight: "600",
+			color: colors.text.muted,
+			paddingTop: SPACING[4],
+			letterSpacing: 0.3,
 		},
 	});
 }
