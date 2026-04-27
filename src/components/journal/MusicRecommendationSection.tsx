@@ -135,11 +135,13 @@ export function MusicRecommendationSection({ entryId, musicStatus }: Props) {
 		);
 	} else if (recommendation != null) {
 		if (recommendation.mode === "SHIFT") {
-			const groups: Array<{ stage: 1 | 2 | 3; items: typeof recommendation.tracks }> = [
-				{ stage: 1, items: recommendation.tracks.filter((t) => t.stage === 1) },
-				{ stage: 2, items: recommendation.tracks.filter((t) => t.stage === 2) },
-				{ stage: 3, items: recommendation.tracks.filter((t) => t.stage === 3) },
-			].filter((g) => g.items.length > 0);
+			const stages = [1, 2, 3] as const;
+			const groups = stages
+				.map((stage) => ({
+					stage,
+					items: recommendation.tracks.filter((t) => t.stage === stage),
+				}))
+				.filter((g) => g.items.length > 0);
 
 			contentBody = (
 				<View>
