@@ -5,7 +5,7 @@ import { useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, SPACING } from "@/theme";
 import type { ConfirmationDialogProps } from "@/types";
-import { Button } from "../buttons/Button";
+import { Button } from "@/components/ui/buttons/Button";
 import { Modal } from "./Modal";
 
 export function ConfirmationDialog({

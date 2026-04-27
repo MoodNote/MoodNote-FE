@@ -14,7 +14,7 @@ import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, RADIUS, SPACING } from "@/theme";
 import type { ModalProps } from "@/types";
 import { Ionicons } from "@expo/vector-icons";
-import { IconButton } from "../buttons/IconButton";
+import { IconButton } from "@/components/ui/buttons/IconButton";
 
 export function Modal({ visible, onDismiss, children, title, dismissible = true }: ModalProps) {
 	const colors = useThemeColors();

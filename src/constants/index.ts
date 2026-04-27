@@ -8,6 +8,7 @@ export * from "./feedback";
 export * from "./journal";
 export * from "./navigation";
 export * from "./notifications";
+export * from "./stats";
 export * from "./ui";
 
 import { Platform } from "react-native";

@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { STATS_ERROR_MESSAGES } from "@/constants";
 import { musicService } from "@/services";
 import type { MusicStatus } from "@/types/entry.types";
 import type { MusicRecommendation } from "@/types/music.types";
-import { logError } from "@/utils";
+import { extractErrorMessage, logError } from "@/utils";
 
 const MUSIC_POLL_INTERVAL_MS = 2000;
 const MUSIC_POLLING_STATUSES: MusicStatus[] = ["PENDING", "GENERATING"];
@@ -69,7 +70,7 @@ export function useEntryRecommendation(
 
 			const result = await musicService.getByEntry(entryId);
 			if (!result.success) {
-				setError("Không thể tải gợi ý nhạc.");
+				setError(STATS_ERROR_MESSAGES.MUSIC_RECOMMENDATION);
 				return;
 			}
 
@@ -80,8 +81,7 @@ export function useEntryRecommendation(
 				startPolling();
 			}
 		} catch (err) {
-			const message = err instanceof Error ? err.message : "Không thể tải gợi ý nhạc.";
-			setError(message);
+			setError(extractErrorMessage(err, STATS_ERROR_MESSAGES.MUSIC_RECOMMENDATION));
 			logError(err, { context: "useEntryRecommendation.fetch" });
 		} finally {
 			setIsLoading(false);
@@ -95,13 +95,12 @@ export function useEntryRecommendation(
 		try {
 			const result = await musicService.refreshRecommendation(entryId);
 			if (!result.success) {
-				setError("Không thể làm mới gợi ý nhạc.");
+				setError(STATS_ERROR_MESSAGES.MUSIC_REFRESH);
 				return;
 			}
 			setRecommendation(result.data.recommendation);
 		} catch (err) {
-			const message = err instanceof Error ? err.message : "Không thể làm mới gợi ý nhạc.";
-			setError(message);
+			setError(extractErrorMessage(err, STATS_ERROR_MESSAGES.MUSIC_REFRESH));
 			logError(err, { context: "useEntryRecommendation.refresh" });
 		} finally {
 			setIsLoading(false);

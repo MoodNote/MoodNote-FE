@@ -93,3 +93,25 @@ export function todayDateString(): string {
 export function nowISO(): string {
 	return new Date().toISOString();
 }
+
+/**
+ * YYYY-MM-DD for the Monday of the current calendar week.
+ * Used by statistics weekly range selector.
+ */
+export function getCurrentMonday(): string {
+	const d = new Date();
+	const day = d.getDay(); // 0 = Sunday
+	const diff = day === 0 ? -6 : 1 - day;
+	d.setDate(d.getDate() + diff);
+	return d.toISOString().split("T")[0] ?? "";
+}
+
+/**
+ * Add or subtract days from a YYYY-MM-DD string.
+ * Used by statistics weekly navigation.
+ */
+export function shiftDate(dateStr: string, days: number): string {
+	const d = new Date(dateStr);
+	d.setDate(d.getDate() + days);
+	return d.toISOString().split("T")[0] ?? "";
+}

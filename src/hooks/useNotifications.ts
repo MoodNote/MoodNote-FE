@@ -8,7 +8,8 @@ import type {
 	NotificationPagination,
 	UseNotificationsResult,
 } from "@/types/notification.types";
-import { logError } from "@/utils/error";
+import { extractErrorMessage, logError } from "@/utils/error";
+import { nowISO } from "@/utils/date";
 import { useCallback, useEffect, useState } from "react";
 
 export function useNotifications(): UseNotificationsResult {
@@ -53,7 +54,7 @@ export function useNotifications(): UseNotificationsResult {
 				setPagination(data.pagination);
 				setCurrentPage(1);
 			} catch (err) {
-				setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+				setError(extractErrorMessage(err));
 			} finally {
 				setIsLoading(false);
 			}
@@ -70,7 +71,7 @@ export function useNotifications(): UseNotificationsResult {
 			setPagination(data.pagination);
 			setCurrentPage(1);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+			setError(extractErrorMessage(err));
 		} finally {
 			setIsRefreshing(false);
 		}
@@ -101,7 +102,7 @@ export function useNotifications(): UseNotificationsResult {
 			}
 			setNotifications((prev) =>
 				prev.map((n) =>
-					n.id === id ? { ...n, isRead: true, readAt: new Date().toISOString() } : n,
+					n.id === id ? { ...n, isRead: true, readAt: nowISO() } : n,
 				),
 			);
 			setUnreadCount((prev) => Math.max(0, prev - 1));
@@ -117,7 +118,7 @@ export function useNotifications(): UseNotificationsResult {
 			return;
 		}
 		setNotifications((prev) =>
-			prev.map((n) => ({ ...n, isRead: true, readAt: new Date().toISOString() })),
+			prev.map((n) => ({ ...n, isRead: true, readAt: nowISO() })),
 		);
 		setUnreadCount(0);
 		resetUnreadCount();

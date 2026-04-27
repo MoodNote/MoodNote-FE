@@ -14,8 +14,8 @@ import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import type { EntryListItem } from "@/types/entry.types";
 import { s, vs, formatDateWithWeekday } from "@/utils";
 import { ANALYSIS_STATUS_LABELS } from "@/constants";
-import { Badge } from "../ui/display/Badge";
-import { Card } from "../ui/display/Card";
+import { Badge } from "@/components/ui/display/Badge";
+import { Card } from "@/components/ui/display/Card";
 
 interface Props {
 	entry: EntryListItem;

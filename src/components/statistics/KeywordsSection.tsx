@@ -1,6 +1,6 @@
 // FR-18: Top keywords from analyzed entries
 
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 
 import { SkeletonLoader } from "@/components/ui/feedback";
@@ -81,7 +81,7 @@ interface KeywordRowProps {
 	maxCount: number;
 }
 
-function KeywordRow({ item, maxCount }: KeywordRowProps) {
+const KeywordRow = memo(function KeywordRow({ item, maxCount }: KeywordRowProps) {
 	const colors = useThemeColors();
 	const styles = useMemo(() => createRowStyles(colors), [colors]);
 	const barPercent = Math.round((item.count / maxCount) * 100);
@@ -95,7 +95,7 @@ function KeywordRow({ item, maxCount }: KeywordRowProps) {
 			<Text style={styles.count}>{item.count}</Text>
 		</View>
 	);
-}
+});
 
 function createStyles(colors: ThemeColors) {
 	return StyleSheet.create({

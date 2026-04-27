@@ -22,8 +22,8 @@ SplashScreen.preventAutoHideAsync();
 // so we use messaging() (namespaced) here. RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS suppresses
 // the resulting deprecation warning for this specific call only.
 (globalThis as { RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS?: boolean }).RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS = true;
-setBackgroundMessageHandler(messaging(), async (remoteMessage) => {
-	console.log("FCM background message received:", remoteMessage);
+setBackgroundMessageHandler(messaging(), async (_remoteMessage) => {
+	// Handler registration is required for Android headless tasks — no action needed
 });
 (globalThis as { RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS?: boolean }).RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS = false;
 

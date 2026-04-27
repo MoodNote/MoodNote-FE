@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { STATS_ERROR_MESSAGES } from "@/constants";
 import { statsService } from "@/services";
 import type { GetKeywordsParams, KeywordsData } from "@/types/stats.types";
 import { logError } from "@/utils";
@@ -20,14 +21,14 @@ export function useKeywordStats(params?: GetKeywordsParams): UseKeywordStatsResu
 
 	const paramsKey = JSON.stringify(params);
 
-	const fetch = useCallback(async () => {
+	const fetchData = useCallback(async () => {
 		setIsLoading(true);
 		setError(null);
 		const res = await statsService.getKeywordStats(params);
 		if (res.success) {
 			setData(res.data);
 		} else {
-			setError("Không thể tải từ khóa.");
+			setError(STATS_ERROR_MESSAGES.KEYWORDS);
 			logError(res.error, { context: "useKeywordStats" });
 		}
 		setIsLoading(false);
@@ -44,7 +45,7 @@ export function useKeywordStats(params?: GetKeywordsParams): UseKeywordStatsResu
 			if (res.success) {
 				setData(res.data);
 			} else {
-				setError("Không thể tải từ khóa.");
+				setError(STATS_ERROR_MESSAGES.KEYWORDS);
 				logError(res.error, { context: "useKeywordStats" });
 			}
 			setIsLoading(false);
@@ -55,5 +56,5 @@ export function useKeywordStats(params?: GetKeywordsParams): UseKeywordStatsResu
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [paramsKey]);
 
-	return { data, isLoading, error, refresh: fetch };
+	return { data, isLoading, error, refresh: fetchData };
 }

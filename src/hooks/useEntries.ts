@@ -3,7 +3,7 @@
 import { DEFAULT_PAGE_LIMIT } from "@/constants";
 import { entryService } from "@/services";
 import type { EntryListItem, EntryPagination, UseEntriesResult } from "@/types/entry.types";
-import { logError } from "@/utils";
+import { extractErrorMessage, logError } from "@/utils";
 import { useCallback, useEffect, useState } from "react";
 
 export function useEntries(): UseEntriesResult {
@@ -29,7 +29,7 @@ export function useEntries(): UseEntriesResult {
 				setEntries(data.entries);
 				setPagination(data.pagination);
 			} catch (err) {
-				setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+				setError(extractErrorMessage(err));
 			} finally {
 				setIsLoading(false);
 			}
@@ -45,7 +45,7 @@ export function useEntries(): UseEntriesResult {
 			setEntries(data.entries);
 			setPagination(data.pagination);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+			setError(extractErrorMessage(err));
 		} finally {
 			setIsRefreshing(false);
 		}

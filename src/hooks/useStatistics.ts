@@ -2,24 +2,8 @@
 
 import { statsService } from "@/services";
 import type { MonthlyCalendar, WeeklyStats } from "@/types/stats.types";
-import { logError } from "@/utils";
+import { getCurrentMonday, logError, shiftDate, todayDateString } from "@/utils";
 import { useCallback, useEffect, useState } from "react";
-
-/** Returns YYYY-MM-DD for the Monday of the current week */
-function getCurrentMonday(): string {
-	const d = new Date();
-	const day = d.getDay(); // 0=Sun
-	const diff = day === 0 ? -6 : 1 - day;
-	d.setDate(d.getDate() + diff);
-	return d.toISOString().split("T")[0] ?? "";
-}
-
-/** Add/subtract days from a YYYY-MM-DD string */
-function shiftDate(dateStr: string, days: number): string {
-	const d = new Date(dateStr);
-	d.setDate(d.getDate() + days);
-	return d.toISOString().split("T")[0] ?? "";
-}
 
 interface UseStatisticsResult {
 	weeklyData: WeeklyStats | null;
@@ -36,7 +20,7 @@ interface UseStatisticsResult {
 }
 
 export function useStatistics(): UseStatisticsResult {
-	const today = new Date().toISOString().split("T")[0] ?? "";
+	const today = todayDateString();
 	const now = new Date();
 
 	const [weekStartDate, setWeekStartDate] = useState<string>(getCurrentMonday());

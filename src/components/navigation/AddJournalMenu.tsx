@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+﻿import { useEffect, useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
 	Easing,
@@ -53,14 +53,12 @@ export function AddJournalMenu({ visible, onDismiss }: AddJournalMenuProps) {
 					iconName="create-outline"
 					label="Viết nhật ký"
 					onPress={onDismiss}
-					colors={colors}
 				/>
 				<View style={styles.divider} />
 				<MenuOption
 					iconName="mic-outline"
 					label="Nhật ký bằng giọng nói"
 					onPress={onDismiss}
-					colors={colors}
 				/>
 			</View>
 			{/* Notch/stem — flat top flushes with card bottom, pill bottom points toward FAB.

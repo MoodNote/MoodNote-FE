@@ -2,6 +2,7 @@
 
 import { entryService } from "@/services";
 import type { Entry, UpdateEntryPayload, UseEntryResult } from "@/types/entry.types";
+import { extractErrorMessage } from "@/utils";
 import { useCallback, useEffect, useState } from "react";
 
 export function useEntry(id: string): UseEntryResult {
@@ -23,7 +24,7 @@ export function useEntry(id: string): UseEntryResult {
 				}
 			} catch (err) {
 				if (!cancelled) {
-					setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+					setError(extractErrorMessage(err));
 				}
 			} finally {
 				if (!cancelled) setIsLoading(false);

@@ -1,6 +1,6 @@
 // FR-18: Writing patterns by day-of-week and time-of-day
 
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 
 import { EmotionIcon } from "@/components/statistics/EmotionIcon";
@@ -88,7 +88,7 @@ export function PatternsSection() {
 	);
 }
 
-function DayCard({ item }: { item: DayOfWeekPattern }) {
+const DayCard = memo(function DayCard({ item }: { item: DayOfWeekPattern }) {
 	const colors = useThemeColors();
 	const styles = useMemo(() => createCardStyles(colors), [colors]);
 	return (
@@ -98,9 +98,9 @@ function DayCard({ item }: { item: DayOfWeekPattern }) {
 			<Text style={styles.cardCount}>{item.totalEntries}</Text>
 		</View>
 	);
-}
+});
 
-function PeriodCard({ item }: { item: TimeOfDayPattern }) {
+const PeriodCard = memo(function PeriodCard({ item }: { item: TimeOfDayPattern }) {
 	const colors = useThemeColors();
 	const styles = useMemo(() => createCardStyles(colors), [colors]);
 	return (
@@ -111,7 +111,7 @@ function PeriodCard({ item }: { item: TimeOfDayPattern }) {
 			<Text style={styles.cardCount}>{item.totalEntries}</Text>
 		</View>
 	);
-}
+});
 
 function createStyles(colors: ThemeColors) {
 	return StyleSheet.create({

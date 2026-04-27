@@ -1,20 +1,21 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import { s } from "@/utils";
 import type { IoniconName } from "@/constants";
+import { useThemeColors } from "@/hooks";
 
 interface Props {
 	iconName: IoniconName;
 	label: string;
 	onPress: () => void;
-	colors: ThemeColors;
 }
 
-export function MenuOption({ iconName, label, onPress, colors }: Props) {
+export const MenuOption = memo(function MenuOption({ iconName, label, onPress }: Props) {
+	const colors = useThemeColors();
 	const styles = useMemo(() => createOptionStyles(colors), [colors]);
 	return (
 		<Pressable
@@ -28,7 +29,7 @@ export function MenuOption({ iconName, label, onPress, colors }: Props) {
 			</View>
 		</Pressable>
 	);
-}
+});
 
 function createOptionStyles(colors: ThemeColors) {
 	return StyleSheet.create({

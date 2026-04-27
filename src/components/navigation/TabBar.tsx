@@ -103,7 +103,6 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 				isFocused={isFocused}
 				onPress={onPress}
 				onLongPress={onLongPress}
-				colors={colors}
 				unreadCount={route.name === "profile" ? unreadCount : 0}
 			/>
 		);

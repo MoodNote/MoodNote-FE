@@ -110,6 +110,14 @@ export const logError = (error: unknown, context: Record<string, unknown> = {}) 
 };
 
 /**
+ * Extract a human-readable message from an unknown error value.
+ * Use this in catch blocks instead of inline ternary patterns.
+ */
+export function extractErrorMessage(err: unknown, fallback = "Có lỗi xảy ra."): string {
+	return err instanceof Error ? err.message : fallback;
+}
+
+/**
  * Check if error should trigger logout (401/403)
  * @param {unknown} error - Parsed API error
  * @returns {boolean} Whether error should trigger logout

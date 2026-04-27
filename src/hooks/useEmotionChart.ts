@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { STATS_ERROR_MESSAGES } from "@/constants";
 import { statsService } from "@/services";
 import type { EmotionChartData, GetEmotionChartParams } from "@/types/stats.types";
 import { logError } from "@/utils";
@@ -23,7 +24,7 @@ export function useEmotionChart(initialRange: ChartRange = 30): UseEmotionChartR
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	const fetch = useCallback(
+	const fetchData = useCallback(
 		async (params?: GetEmotionChartParams) => {
 			setIsLoading(true);
 			setError(null);
@@ -31,7 +32,7 @@ export function useEmotionChart(initialRange: ChartRange = 30): UseEmotionChartR
 			if (res.success) {
 				setData(res.data);
 			} else {
-				setError("Không thể tải biểu đồ cảm xúc.");
+				setError(STATS_ERROR_MESSAGES.EMOTION_CHART);
 				logError(res.error, { context: "useEmotionChart" });
 			}
 			setIsLoading(false);
@@ -49,7 +50,7 @@ export function useEmotionChart(initialRange: ChartRange = 30): UseEmotionChartR
 			if (res.success) {
 				setData(res.data);
 			} else {
-				setError("Không thể tải biểu đồ cảm xúc.");
+				setError(STATS_ERROR_MESSAGES.EMOTION_CHART);
 				logError(res.error, { context: "useEmotionChart" });
 			}
 			setIsLoading(false);
@@ -59,7 +60,7 @@ export function useEmotionChart(initialRange: ChartRange = 30): UseEmotionChartR
 		};
 	}, [range]);
 
-	const refresh = useCallback(() => fetch(), [fetch]);
+	const refresh = useCallback(() => fetchData(), [fetchData]);
 
 	return { data, range, isLoading, error, setRange, refresh };
 }

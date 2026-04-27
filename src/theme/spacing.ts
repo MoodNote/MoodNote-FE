@@ -7,7 +7,7 @@
  * For values not covered (e.g. 7, 15), call s() / vs() inline.
  */
 
-import { s, vs } from "../utils/responsive";
+import { s, vs } from "@/utils/responsive";
 
 // ── Spacing ───────────────────────────────────────────────────────────────────
 

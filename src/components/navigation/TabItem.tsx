@@ -15,6 +15,7 @@ import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import { s } from "@/utils";
 import type { IoniconName } from "@/constants";
 import { TAB_ICONS } from "@/constants";
+import { useThemeColors } from "@/hooks";
 
 interface Props {
 	label: string;
@@ -22,11 +23,11 @@ interface Props {
 	isFocused: boolean;
 	onPress: () => void;
 	onLongPress: () => void;
-	colors: ThemeColors;
 	unreadCount?: number;
 }
 
-export function TabItem({ label, routeName, isFocused, onPress, onLongPress, colors, unreadCount = 0 }: Props) {
+export function TabItem({ label, routeName, isFocused, onPress, onLongPress, unreadCount = 0 }: Props) {
+	const colors = useThemeColors();
 	const iconConfig = TAB_ICONS[routeName] ?? { active: "ellipse", inactive: "ellipse-outline" };
 	const iconName: IoniconName = isFocused ? iconConfig.active : iconConfig.inactive;
 	const iconColor = isFocused ? colors.nav.activeIcon : colors.nav.inactiveIcon;

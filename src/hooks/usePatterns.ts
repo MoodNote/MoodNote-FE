@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { STATS_ERROR_MESSAGES } from "@/constants";
 import { statsService } from "@/services";
 import type { GetPatternsParams, PatternsData } from "@/types/stats.types";
 import { logError } from "@/utils";
@@ -20,14 +21,14 @@ export function usePatterns(params?: GetPatternsParams): UsePatternsResult {
 
 	const paramsKey = JSON.stringify(params);
 
-	const fetch = useCallback(async () => {
+	const fetchData = useCallback(async () => {
 		setIsLoading(true);
 		setError(null);
 		const res = await statsService.getPatterns(params);
 		if (res.success) {
 			setData(res.data);
 		} else {
-			setError("Không thể tải phân tích thói quen.");
+			setError(STATS_ERROR_MESSAGES.PATTERNS);
 			logError(res.error, { context: "usePatterns" });
 		}
 		setIsLoading(false);
@@ -44,7 +45,7 @@ export function usePatterns(params?: GetPatternsParams): UsePatternsResult {
 			if (res.success) {
 				setData(res.data);
 			} else {
-				setError("Không thể tải phân tích thói quen.");
+				setError(STATS_ERROR_MESSAGES.PATTERNS);
 				logError(res.error, { context: "usePatterns" });
 			}
 			setIsLoading(false);
@@ -55,5 +56,5 @@ export function usePatterns(params?: GetPatternsParams): UsePatternsResult {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [paramsKey]);
 
-	return { data, isLoading, error, refresh: fetch };
+	return { data, isLoading, error, refresh: fetchData };
 }
