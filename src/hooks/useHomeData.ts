@@ -8,7 +8,7 @@ import { logError } from "@/utils";
 import { useCallback, useEffect, useState } from "react";
 
 interface HomeData {
-	username: string;
+	name: string;
 	streaks: StatsSummary | null;
 	recentEntries: EntryListItem[];
 	recentPlaylists: MusicRecommendation[];
@@ -31,7 +31,7 @@ async function fetchAllHomeData(): Promise<HomeData> {
 	]);
 
 	return {
-		username: userRes.success ? userRes.data.username : "",
+		name: userRes.success ? userRes.data.name : "",
 		streaks: summaryRes.success ? summaryRes.data : null,
 		recentEntries: entriesRes.success ? entriesRes.data.entries : [],
 		recentPlaylists: musicRes.success ? musicRes.data.playlists : [],

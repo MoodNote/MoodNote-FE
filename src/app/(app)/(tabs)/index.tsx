@@ -5,7 +5,7 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native
 
 import { ScreenWrapper } from "@/components";
 import { HomeSkeleton, RecentEntryItem, RecentPlaylistCard, StreakCard } from "@/components/home";
-import { SectionHeader } from "@/components/ui";
+import { Avatar, SectionHeader } from "@/components/ui";
 import { ROUTES } from "@/constants";
 import { useHomeData, useThemeColors } from "@/hooks";
 import type { ThemeColors } from "@/theme";
@@ -26,8 +26,8 @@ export default function HomeScreen() {
 		return <HomeSkeleton />;
 	}
 
-	const { username, streaks, recentEntries, recentPlaylists } = data ?? {
-		username: "",
+	const { name, streaks, recentEntries, recentPlaylists } = data ?? {
+		name: "",
 		streaks: null,
 		recentEntries: [],
 		recentPlaylists: [],
@@ -50,18 +50,16 @@ export default function HomeScreen() {
 				<View style={styles.header}>
 					<Text style={styles.appTitle}>MoodNote</Text>
 				</View>
-
 				{/* Greeting */}
 				<View style={styles.greetingRow}>
 					<View style={styles.avatarPlaceholder}>
-						<Text style={styles.avatarEmoji}>🐰</Text>
+						<Avatar name={name} size="md" />
 					</View>
 					<View style={styles.greetingText}>
-						<Text style={styles.greeting}>Hi, {username.length > 0 ? username : "bạn"}!</Text>
+						<Text style={styles.greeting}>Hi, {name.length > 0 ? name : "bạn"}!</Text>
 						<Text style={styles.greetingSub}>Ngày hôm nay của bạn có ổn không?</Text>
 					</View>
 				</View>
-
 				{/* Streak widgets */}
 				{streaks != null && (
 					<View style={styles.streakRow}>
@@ -83,7 +81,6 @@ export default function HomeScreen() {
 						)}
 					</View>
 				)}
-
 				{/* Recent entries */}
 				<View style={styles.section}>
 					<SectionHeader
@@ -104,7 +101,6 @@ export default function HomeScreen() {
 						))
 					)}
 				</View>
-
 				{/* Recent playlists */}
 				{recentPlaylists.length > 0 && (
 					<View style={styles.section}>
