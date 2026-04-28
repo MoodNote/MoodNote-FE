@@ -15,7 +15,6 @@ import {
 	View,
 } from "react-native";
 
-import { Badge } from "@/components/ui/display/Badge";
 import { Button } from "@/components/ui/buttons/Button";
 import { RichTextEditor, SaveStatusBanner } from "@/components/journal";
 import type { RichTextEditorRef } from "@/components/journal";
@@ -23,6 +22,7 @@ import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
 import { useAutoSave, useForm, useThemeColors } from "@/hooks";
 import { entryService } from "@/services";
 import { createEntryFormSchema } from "@/schemas/entry.schemas";
+import { useMoodTagsStore } from "@/store";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, RADIUS, SPACING } from "@/theme";
 import { s, vs, htmlToText } from "@/utils";
@@ -34,20 +34,22 @@ export default function CreateEntryScreen() {
 
 	// Tracks the server entry ID after first save — null = not yet created
 	const entryIdRef = useRef<string | null>(null);
-	const [tagInput, setTagInput] = useState("");
 	const [contentDirty, setContentDirty] = useState(false);
 
 	// Rich text editor state — managed outside react-hook-form
 	const deltaRef = useRef<QuillDelta>({ ops: [{ insert: "\n" }] });
 	const editorRef = useRef<RichTextEditorRef>(null);
 
+	// Available tags from store (fetched once on app mount)
+	const availableTags = useMoodTagsStore((s) => s.tags);
+
 	const { watch, setValue, formState } = useForm({
 		schema: createEntryFormSchema,
-		defaultValues: { title: "", tags: [] },
+		defaultValues: { title: "", tagIds: [] },
 		onSubmit: async () => {}, // auto-save only — no manual submit
 	});
 
-	const currentTags = watch("tags") ?? [];
+	const currentTagIds = watch("tagIds") ?? [];
 	const titleValue = watch("title") ?? "";
 
 	// ── Auto-save ────────────────────────────────────────────────────────────
@@ -57,14 +59,14 @@ export default function CreateEntryScreen() {
 		if (htmlToText(html).length < 10) return;
 
 		const title = watch("title") ?? "";
-		const tags = watch("tags") ?? [];
+		const tagIds = watch("tagIds") ?? [];
 		const today = new Date().toISOString().split("T")[0];
 
 		if (entryIdRef.current === null) {
 			const result = await entryService.create({
 				content: deltaRef.current,
 				title: title.trim() || undefined,
-				tags,
+				tagIds,
 				entryDate: today,
 				inputMethod: "TEXT",
 			});
@@ -74,7 +76,7 @@ export default function CreateEntryScreen() {
 			const result = await entryService.update(entryIdRef.current, {
 				content: deltaRef.current,
 				title: title.trim() || undefined,
-				tags,
+				tagIds,
 			});
 			if (!result.success) throw new Error(result.error ?? "Failed to update entry");
 		}
@@ -84,24 +86,17 @@ export default function CreateEntryScreen() {
 
 	// ── Tag management (FR-08) ───────────────────────────────────────────────
 
-	const addTag = useCallback(() => {
-		const trimmed = tagInput.trim().toLowerCase();
-		if (!trimmed || currentTags.includes(trimmed) || currentTags.length >= 5) return;
-		setValue("tags", [...currentTags, trimmed], { shouldDirty: true });
-		setTagInput("");
-		triggerSave();
-	}, [tagInput, currentTags, setValue, triggerSave]);
-
-	const removeTag = useCallback(
-		(tag: string) => {
-			setValue(
-				"tags",
-				currentTags.filter((t) => t !== tag),
-				{ shouldDirty: true },
-			);
+	const toggleTag = useCallback(
+		(id: string) => {
+			const next = currentTagIds.includes(id)
+				? currentTagIds.filter((t) => t !== id)
+				: currentTagIds.length < 10
+					? [...currentTagIds, id]
+					: currentTagIds;
+			setValue("tagIds", next, { shouldDirty: true });
 			triggerSave();
 		},
-		[currentTags, setValue, triggerSave],
+		[currentTagIds, setValue, triggerSave],
 	);
 
 	// ── Navigation ───────────────────────────────────────────────────────────
@@ -175,48 +170,44 @@ export default function CreateEntryScreen() {
 						onBlur={() => void triggerImmediately()}
 					/>
 
-					{/* Tags (FR-08) */}
-					<View style={styles.tagsSection}>
-						<Text style={styles.tagsLabel}>Thẻ</Text>
-
-						{currentTags.length > 0 && (
-							<ScrollView
-								horizontal
-								showsHorizontalScrollIndicator={false}
-								style={styles.tagsScroll}
-								contentContainerStyle={styles.tagsContent}>
-								{currentTags.map((tag) => (
-									<Badge
-										key={tag}
-										label={`#${tag}`}
-										size="sm"
-										onDismiss={() => removeTag(tag)}
-									/>
-								))}
-							</ScrollView>
-						)}
-
-						<View style={styles.tagInputRow}>
-							<TextInput
-								style={[styles.tagInput, { color: colors.input.text, borderColor: colors.input.border }]}
-								placeholder="Thêm thẻ..."
-								placeholderTextColor={colors.input.placeholder}
-								value={tagInput}
-								onChangeText={setTagInput}
-								onSubmitEditing={addTag}
-								returnKeyType="done"
-								maxLength={20}
-								autoCapitalize="none"
-							/>
-							<Button
-								title="Thêm"
-								onPress={addTag}
-								variant="outline"
-								size="sm"
-								disabled={tagInput.trim().length === 0 || currentTags.length >= 5}
-							/>
+					{/* Tags (FR-08) — chip picker from admin-managed catalog */}
+					{availableTags.length > 0 && (
+						<View style={styles.tagsSection}>
+							<Text style={styles.tagsLabel}>
+								Thẻ{currentTagIds.length > 0 ? ` (${currentTagIds.length}/10)` : ""}
+							</Text>
+							<View style={styles.tagsGrid}>
+								{availableTags.map((tag) => {
+									const selected = currentTagIds.includes(tag.id);
+									const disabled = !selected && currentTagIds.length >= 10;
+									return (
+										<Pressable
+											key={tag.id}
+											onPress={() => toggleTag(tag.id)}
+											disabled={disabled}
+											accessibilityRole="button"
+											accessibilityLabel={`${selected ? "Bỏ chọn" : "Chọn"} thẻ ${tag.name}`}
+											style={[
+												styles.tagChip,
+												selected
+													? { backgroundColor: colors.brand.primary, borderColor: colors.brand.primary }
+													: { backgroundColor: colors.background.card, borderColor: colors.border.default },
+												disabled && styles.tagChipDisabled,
+											]}>
+											<Text
+												style={[
+													styles.tagChipText,
+													{ color: selected ? colors.text.inverse : colors.text.secondary },
+													disabled && { color: colors.interactive.disabled },
+												]}>
+												#{tag.name}
+											</Text>
+										</Pressable>
+									);
+								})}
+							</View>
 						</View>
-					</View>
+					)}
 				</ScrollView>
 			</KeyboardAvoidingView>
 		</ScreenWrapper>
@@ -257,21 +248,22 @@ function createStyles(colors: ThemeColors) {
 			color: colors.text.secondary,
 			marginBottom: SPACING[8],
 		},
-		tagsScroll: { marginBottom: SPACING[8] },
-		tagsContent: { gap: s(6) },
-		tagInputRow: {
+		tagsGrid: {
 			flexDirection: "row",
-			alignItems: "center",
+			flexWrap: "wrap",
 			gap: s(8),
 		},
-		tagInput: {
-			flex: 1,
+		tagChip: {
 			borderWidth: 1,
-			borderRadius: RADIUS.sm,
+			borderRadius: RADIUS.full,
 			paddingHorizontal: SPACING[12],
-			paddingVertical: SPACING[8],
+			paddingVertical: SPACING[6],
+		},
+		tagChipDisabled: {
+			opacity: 0.4,
+		},
+		tagChipText: {
 			fontSize: FONT_SIZE[13],
-			backgroundColor: colors.input.background,
 		},
 	});
 }

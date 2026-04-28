@@ -1,4 +1,5 @@
 export type * from "./api.types";
+export type * from "./mood-tag.types";
 export type * from "./appLock.types";
 export type * from "./user.types";
 export type * from "./entry.types";

@@ -2,3 +2,4 @@
 // Example: export { useMoodStore } from "./moodStore";
 export { useAppLockStore } from "./appLock.store";
 export { useNotificationStore } from "./notification.store";
+export { useMoodTagsStore } from "./moodTags.store";

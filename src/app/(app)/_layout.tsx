@@ -6,7 +6,7 @@ import { ProtectedRoute } from "@/components/navigation";
 import { NotificationPopupProvider, useNotificationPopup } from "@/components/ui/feedback";
 import { ROUTES } from "@/constants";
 import { getInitialNotification, getMessaging, onMessage, onNotificationOpenedApp } from "@react-native-firebase/messaging";
-import { useAppLockStore, useNotificationStore } from "@/store";
+import { useAppLockStore, useMoodTagsStore, useNotificationStore } from "@/store";
 import { router } from "expo-router";
 import { AppState, View } from "react-native";
 
@@ -18,10 +18,16 @@ function AppContent() {
 	const appLockInitialize = useAppLockStore((s) => s.initialize);
 	const onBackground = useAppLockStore((s) => s.onBackground);
 	const onForeground = useAppLockStore((s) => s.onForeground);
+	const fetchMoodTags = useMoodTagsStore((s) => s.fetchTags);
+	const moodTagsLoaded = useMoodTagsStore((s) => s.isLoaded);
 
 	useEffect(() => {
 		void appLockInitialize();
 	}, [appLockInitialize]);
+
+	useEffect(() => {
+		if (!moodTagsLoaded) void fetchMoodTags();
+	}, [fetchMoodTags, moodTagsLoaded]);
 
 	useEffect(() => {
 		const sub = AppState.addEventListener("change", (nextState) => {

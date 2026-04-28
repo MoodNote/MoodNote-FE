@@ -2,15 +2,11 @@ import { z } from "zod";
 
 // ─── Reusable field schemas ──────────────────────────────────────────────────
 
-// FR-08: letters/numbers/hyphens only; 2–30 chars; case already lowercased by addTag()
-const tagSchema = z
-	.string()
-	.min(2, "Tag phải có ít nhất 2 ký tự")
-	.max(30, "Tag tối đa 30 ký tự")
-	.regex(/^[a-z0-9-]+$/, "Tag chỉ được chứa chữ cái, số và gạch ngang");
-
-// FR-08: max 10 tags per entry
-const tagsSchema = z.array(tagSchema).max(10, "Tối đa 10 thẻ").default([]);
+// FR-08: max 10 tag UUIDs per entry
+const tagIdsSchema = z
+	.array(z.string().uuid("ID tag không hợp lệ"))
+	.max(10, "Tối đa 10 thẻ")
+	.default([]);
 
 const titleSchema = z.string().max(100, "Tiêu đề tối đa 100 ký tự").optional();
 
@@ -25,17 +21,17 @@ const contentSchema = z
 export const createEntrySchema = z.object({
 	title: titleSchema,
 	content: contentSchema,
-	tags: tagsSchema,
+	tagIds: tagIdsSchema,
 });
 
 export type CreateEntryApiValues = z.infer<typeof createEntrySchema>;
 
 // ─── Form schemas — content managed externally by RichTextEditor ─────────────
 
-// FR-06, FR-08: form only tracks title + tags; content lives in deltaRef
+// FR-06, FR-08: form only tracks title + tagIds; content lives in deltaRef
 export const createEntryFormSchema = z.object({
 	title: titleSchema,
-	tags: tagsSchema,
+	tagIds: tagIdsSchema,
 });
 
 export type CreateEntryFormValues = z.infer<typeof createEntryFormSchema>;
@@ -45,5 +41,4 @@ export type CreateEntryFormValues = z.infer<typeof createEntryFormSchema>;
 export const editEntryFormSchema = createEntryFormSchema;
 export type EditEntryFormValues = CreateEntryFormValues;
 
-// Keep for any downstream consumers that imported the old editEntrySchema name
 export const editEntrySchema = createEntryFormSchema;

@@ -32,11 +32,11 @@ import {
 } from "@/components/journal";
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
 import { Button } from "@/components/ui/buttons/Button";
-import { Badge } from "@/components/ui/display/Badge";
 import { ANALYSIS_STATUS_LABELS } from "@/constants/journal";
 import { useAnalysisPolling, useAutoSave, useEntry, useForm, useThemeColors } from "@/hooks";
 import { editEntryFormSchema } from "@/schemas/entry.schemas";
 import { entryService } from "@/services";
+import { useMoodTagsStore } from "@/store";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import type { QuillDelta } from "@/types/entry.types";
@@ -77,20 +77,22 @@ export default function EntryDetailScreen() {
 		transform: [{ rotate: `${interpolate(expandProgress.value, [0, 1], [0, 180])}deg` }],
 	}));
 
-	const [tagInput, setTagInput] = useState("");
 	const [contentDirty, setContentDirty] = useState(false);
 
 	// Rich text editor state — managed outside react-hook-form
 	const deltaRef = useRef<QuillDelta>({ ops: [{ insert: "\n" }] });
 	const editorRef = useRef<RichTextEditorRef>(null);
 
+	// Available tags from store (fetched once on app mount)
+	const availableTags = useMoodTagsStore((s) => s.tags);
+
 	const { watch, setValue, reset, formState } = useForm({
 		schema: editEntryFormSchema,
-		defaultValues: { title: "", tags: [] },
+		defaultValues: { title: "", tagIds: [] },
 		onSubmit: async () => {},
 	});
 
-	const currentTags = watch("tags") ?? [];
+	const currentTagIds = watch("tagIds") ?? [];
 	const titleValue = watch("title") ?? "";
 
 	// Populate form and deltaRef when entry loads (use entry, not currentEntry, to avoid
@@ -99,7 +101,7 @@ export default function EntryDetailScreen() {
 		if (!entry) return;
 		reset({
 			title: entry.title ?? "",
-			tags: entry.tags,
+			tagIds: entry.tags.map((t) => t.id),
 		});
 		deltaRef.current = entry.content;
 	}, [entry, reset]);
@@ -119,12 +121,12 @@ export default function EntryDetailScreen() {
 		if (htmlToText(html).length < 10) return;
 
 		const title = watch("title") ?? "";
-		const tags = watch("tags") ?? [];
+		const tagIds = watch("tagIds") ?? [];
 
 		await updateEntry({
 			content: deltaRef.current,
 			title: title.trim() || undefined,
-			tags,
+			tagIds,
 		});
 	}, [watch, updateEntry]);
 
@@ -132,24 +134,17 @@ export default function EntryDetailScreen() {
 
 	// ── Tag management (FR-08) ───────────────────────────────────────────────
 
-	const addTag = useCallback(() => {
-		const trimmed = tagInput.trim().toLowerCase();
-		if (!trimmed || currentTags.includes(trimmed) || currentTags.length >= 5) return;
-		setValue("tags", [...currentTags, trimmed], { shouldDirty: true });
-		setTagInput("");
-		triggerSave();
-	}, [tagInput, currentTags, setValue, triggerSave]);
-
-	const removeTag = useCallback(
-		(tag: string) => {
-			setValue(
-				"tags",
-				currentTags.filter((t) => t !== tag),
-				{ shouldDirty: true },
-			);
+	const toggleTag = useCallback(
+		(tagId: string) => {
+			const next = currentTagIds.includes(tagId)
+				? currentTagIds.filter((t) => t !== tagId)
+				: currentTagIds.length < 10
+					? [...currentTagIds, tagId]
+					: currentTagIds;
+			setValue("tagIds", next, { shouldDirty: true });
 			triggerSave();
 		},
-		[currentTags, setValue, triggerSave],
+		[currentTagIds, setValue, triggerSave],
 	);
 
 	// ── Delete (FR-09) ───────────────────────────────────────────────────────
@@ -346,46 +341,44 @@ export default function EntryDetailScreen() {
 						onBlur={() => void triggerImmediately()}
 					/>
 
-					{/* Tags (FR-08) */}
-					<View style={styles.tagsSection}>
-						<Text style={styles.tagsLabel}>Thẻ</Text>
-
-						{currentTags.length > 0 && (
-							<ScrollView
-								horizontal
-								showsHorizontalScrollIndicator={false}
-								style={styles.tagsScroll}
-								contentContainerStyle={styles.tagsContent}>
-								{currentTags.map((tag) => (
-									<Badge key={tag} label={`#${tag}`} size="sm" onDismiss={() => removeTag(tag)} />
-								))}
-							</ScrollView>
-						)}
-
-						<View style={styles.tagInputRow}>
-							<TextInput
-								style={[
-									styles.tagInput,
-									{ color: colors.input.text, borderColor: colors.input.border },
-								]}
-								placeholder="Thêm thẻ..."
-								placeholderTextColor={colors.input.placeholder}
-								value={tagInput}
-								onChangeText={setTagInput}
-								onSubmitEditing={addTag}
-								returnKeyType="done"
-								maxLength={20}
-								autoCapitalize="none"
-							/>
-							<Button
-								title="Thêm"
-								onPress={addTag}
-								variant="outline"
-								size="sm"
-								disabled={tagInput.trim().length === 0 || currentTags.length >= 5}
-							/>
+					{/* Tags (FR-08) — chip picker from admin-managed catalog */}
+					{availableTags.length > 0 && (
+						<View style={styles.tagsSection}>
+							<Text style={styles.tagsLabel}>
+								Thẻ{currentTagIds.length > 0 ? ` (${currentTagIds.length}/10)` : ""}
+							</Text>
+							<View style={styles.tagsGrid}>
+								{availableTags.map((tag) => {
+									const selected = currentTagIds.includes(tag.id);
+									const disabled = !selected && currentTagIds.length >= 10;
+									return (
+										<Pressable
+											key={tag.id}
+											onPress={() => toggleTag(tag.id)}
+											disabled={disabled}
+											accessibilityRole="button"
+											accessibilityLabel={`${selected ? "Bỏ chọn" : "Chọn"} thẻ ${tag.name}`}
+											style={[
+												styles.tagChip,
+												selected
+													? { backgroundColor: colors.brand.primary, borderColor: colors.brand.primary }
+													: { backgroundColor: colors.background.card, borderColor: colors.border.default },
+												disabled && styles.tagChipDisabled,
+											]}>
+											<Text
+												style={[
+													styles.tagChipText,
+													{ color: selected ? colors.text.inverse : colors.text.secondary },
+													disabled && { color: colors.interactive.disabled },
+												]}>
+												#{tag.name}
+											</Text>
+										</Pressable>
+									);
+								})}
+							</View>
 						</View>
-					</View>
+					)}
 
 					{/* Music recommendation (FR-11) */}
 					{currentEntry.analysisStatus === "COMPLETED" && (
@@ -464,21 +457,22 @@ function createStyles(colors: ThemeColors) {
 			color: colors.text.secondary,
 			marginBottom: SPACING[8],
 		},
-		tagsScroll: { marginBottom: SPACING[8] },
-		tagsContent: { gap: s(6) },
-		tagInputRow: {
+		tagsGrid: {
 			flexDirection: "row",
-			alignItems: "center",
+			flexWrap: "wrap",
 			gap: s(8),
 		},
-		tagInput: {
-			flex: 1,
+		tagChip: {
 			borderWidth: 1,
-			borderRadius: RADIUS.sm,
+			borderRadius: RADIUS.full,
 			paddingHorizontal: SPACING[12],
-			paddingVertical: SPACING[8],
+			paddingVertical: SPACING[6],
+		},
+		tagChipDisabled: {
+			opacity: 0.4,
+		},
+		tagChipText: {
 			fontSize: FONT_SIZE[13],
-			backgroundColor: colors.input.background,
 		},
 	});
 }

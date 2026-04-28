@@ -93,7 +93,7 @@ export function EntryCard({ entry, onPress }: Props) {
 							style={styles.tagsScroll}
 							contentContainerStyle={styles.tagsContent}>
 							{entry.tags.map((tag) => (
-								<Badge key={tag} label={`#${tag}`} size="sm" />
+								<Badge key={tag.id} label={`#${tag.name}`} size="sm" />
 							))}
 						</ScrollView>
 					)}

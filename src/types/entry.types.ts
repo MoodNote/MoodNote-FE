@@ -1,5 +1,7 @@
 // FR-06, FR-08, FR-09: Journal entry types
 
+import type { MoodTag } from "./mood-tag.types";
+
 export type AnalysisStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
 export type MusicStatus = "PENDING" | "GENERATING" | "COMPLETED" | "FAILED";
 export type InputMethod = "TEXT" | "VOICE";
@@ -49,7 +51,7 @@ export interface Entry {
 	content: QuillDelta;
 	entryDate: string;
 	inputMethod: InputMethod;
-	tags: string[];
+	tags: MoodTag[];
 	wordCount: number;
 	isPrivate: boolean;
 	analysisStatus: AnalysisStatus;
@@ -66,7 +68,7 @@ export interface EntryListItem {
 	preview: string;
 	entryDate: string;
 	inputMethod: InputMethod;
-	tags: string[];
+	tags: MoodTag[];
 	wordCount: number;
 	isPrivate: boolean;
 	analysisStatus: AnalysisStatus;
@@ -92,14 +94,14 @@ export interface CreateEntryPayload {
 	content: QuillDelta;
 	entryDate?: string; // YYYY-MM-DD, defaults to today
 	inputMethod?: InputMethod;
-	tags?: string[];
+	tagIds?: string[];
 	isPrivate?: boolean;
 }
 
 export interface UpdateEntryPayload {
 	title?: string;
 	content?: QuillDelta;
-	tags?: string[];
+	tagIds?: string[];
 	isPrivate?: boolean;
 }
 
@@ -109,7 +111,7 @@ export interface GetEntriesParams {
 	limit?: number;
 	startDate?: string;
 	endDate?: string;
-	tags?: string; // comma-separated
+	tagIds?: string; // comma-separated UUIDs
 	analysisStatus?: AnalysisStatus;
 }
 
