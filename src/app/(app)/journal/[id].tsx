@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+	ActivityIndicator,
 	Alert,
 	InteractionManager,
 	KeyboardAvoidingView,
@@ -264,13 +265,35 @@ export default function EntryDetailScreen() {
 					/>
 				</Pressable>
 				<SaveStatusBanner status={saveStatus} onSaveNow={() => void triggerImmediately()} />
-				<Pressable
-					onPress={handleDelete}
-					hitSlop={8}
-					accessibilityRole="button"
-					accessibilityLabel="Xoá nhật ký">
-					<Ionicons name="trash-outline" size={s(22)} color={colors.status.error} />
-				</Pressable>
+				<View style={styles.headerRight}>
+					<Pressable
+						onPress={() => void triggerImmediately()}
+						hitSlop={8}
+						disabled={saveStatus === "saving" || saveStatus === "saved" || saveStatus === "idle"}
+						accessibilityRole="button"
+						accessibilityLabel="Lưu nhật ký">
+						{saveStatus === "saving" ? (
+							<ActivityIndicator size="small" color={colors.interactive.disabled} />
+						) : (
+							<Ionicons
+								name="cloud-upload-outline"
+								size={s(22)}
+								color={
+									saveStatus === "unsaved" || saveStatus === "error"
+										? colors.brand.primary
+										: colors.interactive.disabled
+								}
+							/>
+						)}
+					</Pressable>
+					<Pressable
+						onPress={handleDelete}
+						hitSlop={8}
+						accessibilityRole="button"
+						accessibilityLabel="Xoá nhật ký">
+						<Ionicons name="trash-outline" size={s(22)} color={colors.status.error} />
+					</Pressable>
+				</View>
 			</View>
 
 			<KeyboardAvoidingView
@@ -477,6 +500,11 @@ function createStyles(colors: ThemeColors) {
 			paddingVertical: SPACING[12],
 			borderBottomWidth: 1,
 			borderBottomColor: colors.border.subtle,
+		},
+		headerRight: {
+			flexDirection: "row",
+			alignItems: "center",
+			gap: s(12),
 		},
 		scrollContent: {
 			paddingHorizontal: SPACING[20],

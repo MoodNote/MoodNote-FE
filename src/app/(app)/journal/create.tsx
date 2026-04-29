@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
+	ActivityIndicator,
 	Alert,
 	KeyboardAvoidingView,
 	Platform,
@@ -132,7 +133,26 @@ export default function CreateEntryScreen() {
 					<Ionicons name="chevron-back" size={s(24)} color={isSaving ? colors.interactive.disabled : colors.text.primary} />
 				</Pressable>
 				<SaveStatusBanner status={saveStatus} onSaveNow={() => void triggerImmediately()} />
-				<View style={styles.headerSpacer} />
+				<Pressable
+					onPress={() => void triggerImmediately()}
+					hitSlop={8}
+					disabled={saveStatus === "saving" || saveStatus === "saved" || saveStatus === "idle"}
+					accessibilityRole="button"
+					accessibilityLabel="Lưu nhật ký">
+					{saveStatus === "saving" ? (
+						<ActivityIndicator size="small" color={colors.interactive.disabled} />
+					) : (
+						<Ionicons
+							name="cloud-upload-outline"
+							size={s(22)}
+							color={
+								saveStatus === "unsaved" || saveStatus === "error"
+									? colors.brand.primary
+									: colors.interactive.disabled
+							}
+						/>
+					)}
+				</Pressable>
 			</View>
 
 			<KeyboardAvoidingView
@@ -267,7 +287,6 @@ function createStyles(colors: ThemeColors) {
 			borderBottomWidth: 1,
 			borderBottomColor: colors.border.subtle,
 		},
-		headerSpacer: { width: s(24) },
 		scrollContent: {
 			paddingHorizontal: SPACING[20],
 			paddingTop: SPACING[12],
