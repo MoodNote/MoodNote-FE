@@ -1,8 +1,8 @@
 // FR-06, FR-09: Journal list screen
 
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { memo, useCallback, useMemo } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { memo, useCallback, useMemo, useRef } from "react";
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import ReanimatedSwipeable, {
 	type SwipeableMethods,
@@ -145,6 +145,17 @@ export default function JournalScreen() {
 	const colors = useThemeColors();
 	const styles = useMemo(() => createStyles(colors), [colors]);
 	const { entries, isLoading, isRefreshing, loadMore, refresh, removeEntry } = useEntries();
+
+	const isFirstFocus = useRef(true);
+	useFocusEffect(
+		useCallback(() => {
+			if (isFirstFocus.current) {
+				isFirstFocus.current = false;
+				return;
+			}
+			void refresh();
+		}, [refresh]),
+	);
 
 	const sectionedData = useMemo<ListRow[]>(() => {
 		const rows: ListRow[] = [];
