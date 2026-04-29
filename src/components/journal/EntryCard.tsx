@@ -86,7 +86,7 @@ export function EntryCard({ entry, onPress }: Props) {
 					</Text>
 
 					{/* Tags */}
-					{entry.tags.length > 0 && (
+					{entry.tags != null && entry.tags.length > 0 && (
 						<ScrollView
 							horizontal
 							showsHorizontalScrollIndicator={false}

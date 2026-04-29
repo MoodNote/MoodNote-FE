@@ -3,3 +3,8 @@ export interface MoodTag {
 	name: string;
 	color: string | null;
 }
+
+// For GET /api/mood-tags catalog response — includes type grouping
+export interface CatalogMoodTag extends MoodTag {
+	type: "MOOD" | "LIFE";
+}

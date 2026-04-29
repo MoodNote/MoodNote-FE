@@ -1,21 +1,23 @@
 import { create } from "zustand";
 
 import { moodTagService } from "@/services/mood-tag.service";
-import type { MoodTag } from "@/types/mood-tag.types";
+import type { CatalogMoodTag } from "@/types/mood-tag.types";
 
 interface MoodTagsStore {
-	tags: MoodTag[];
+	moodTags: CatalogMoodTag[];
+	lifeTags: CatalogMoodTag[];
 	isLoaded: boolean;
 	fetchTags: () => Promise<void>;
 }
 
 export const useMoodTagsStore = create<MoodTagsStore>((set) => ({
-	tags: [],
+	moodTags: [],
+	lifeTags: [],
 	isLoaded: false,
 	fetchTags: async () => {
 		const result = await moodTagService.getAll();
 		if (result.success) {
-			set({ tags: result.data.tags, isLoaded: true });
+			set({ moodTags: result.data.moodTags, lifeTags: result.data.lifeTags, isLoaded: true });
 		}
 	},
 }));

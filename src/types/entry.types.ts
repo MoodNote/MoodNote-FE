@@ -51,7 +51,7 @@ export interface Entry {
 	content: QuillDelta;
 	entryDate: string;
 	inputMethod: InputMethod;
-	tags: MoodTag[];
+	tags: MoodTag[] | null;
 	wordCount: number;
 	isPrivate: boolean;
 	analysisStatus: AnalysisStatus;
@@ -68,7 +68,7 @@ export interface EntryListItem {
 	preview: string;
 	entryDate: string;
 	inputMethod: InputMethod;
-	tags: MoodTag[];
+	tags: MoodTag[] | null;
 	wordCount: number;
 	isPrivate: boolean;
 	analysisStatus: AnalysisStatus;

@@ -1,5 +1,7 @@
 // User and authentication types (FR-01 to FR-05)
 
+import type { EmotionType, InputMethod, QuillDelta } from "./entry.types";
+
 export interface User {
 	id: string;
 	email: string;
@@ -72,6 +74,11 @@ export interface ResendResetOtpPayload {
 // FR-05: User settings
 export type ThemePreference = "LIGHT" | "DARK" | "SYSTEM";
 
+// NFR-11: Delete account
+export interface DeleteAccountPayload {
+	password: string;
+}
+
 export interface UserSettings {
 	theme: ThemePreference;
 	language: string;
@@ -81,4 +88,52 @@ export interface UserSettings {
 export interface UpdateSettingsPayload {
 	theme?: ThemePreference;
 	language?: string;
+}
+
+// NFR-11: Data portability — export/import
+
+export interface ExportAnalysis {
+	primaryEmotion: EmotionType;
+	sentimentScore: number;
+	intensity: number;
+	confidence: number | null;
+	emotionDistribution: Record<EmotionType, number> | null;
+	keywords: string[];
+	analyzedAt: string;
+}
+
+export interface ExportEntry {
+	entryDate: string;
+	createdAt: string;
+	inputMethod: InputMethod;
+	wordCount: number;
+	content: { title: string | null; content: QuillDelta } | null;
+	analysis: ExportAnalysis | null;
+}
+
+export interface ExportData {
+	exportedAt: string;
+	profile: Pick<User, "id" | "email" | "username" | "name" | "isEmailVerified" | "createdAt">;
+	settings: { theme: ThemePreference; language: string };
+	entries: ExportEntry[];
+}
+
+export interface ImportEntry {
+	entryDate: string;
+	createdAt?: string;
+	inputMethod?: InputMethod;
+	wordCount?: number;
+	content: { title: string | null; content: QuillDelta } | null;
+	analysis: ExportAnalysis | null;
+}
+
+export interface ImportData {
+	entries?: ImportEntry[];
+	settings?: { theme?: ThemePreference; language?: string };
+}
+
+export interface ImportResult {
+	importedEntries: number;
+	skippedEntries: number;
+	settingsUpdated: boolean;
 }

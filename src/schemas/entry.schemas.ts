@@ -10,9 +10,10 @@ const tagIdsSchema = z
 
 const titleSchema = z.string().max(100, "Tiêu đề tối đa 100 ký tự").optional();
 
-// ─── API-level create schema (includes content as string for reference) ──────
+// ─── Client-side content length reference (not used for API calls) ───────────
 
-// FR-06: plain text content min 10, max 5000 chars (used for API-boundary reference only)
+// FR-06: validates plain text length extracted from Delta — used only in screens
+// that check length before calling entryService. API call uses CreateEntryPayload.
 const contentSchema = z
 	.string()
 	.min(10, "Nhật ký phải có ít nhất 10 ký tự")

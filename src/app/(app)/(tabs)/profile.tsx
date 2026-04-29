@@ -9,11 +9,25 @@ import { useNotificationStore } from "@/store";
 import type { ThemeColors } from "@/theme";
 import { FONT_SIZE, LINE_HEIGHT, RADIUS, SPACING } from "@/theme";
 import { s } from "@/utils";
+import { parseError } from "@/utils/error";
 import { ApiError } from "@/utils/error";
+import type { ImportData } from "@/types/user.types";
 import { Ionicons } from "@expo/vector-icons";
+import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system";
 import { router } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+	ActivityIndicator,
+	Alert,
+	Modal,
+	Pressable,
+	ScrollView,
+	Share,
+	StyleSheet,
+	Text,
+	View,
+} from "react-native";
 
 // FR-05: Profile / settings screen
 export default function ProfileScreen() {
@@ -23,6 +37,14 @@ export default function ProfileScreen() {
 	const { user, logout, updateUser } = useAuth();
 	const { colorScheme, toggleTheme } = useThemeContext();
 	const [isEditing, setIsEditing] = useState(false);
+
+	// ── Data portability state (NFR-11) ─────────────────────────────────────
+	const [isExporting, setIsExporting] = useState(false);
+	const [isImporting, setIsImporting] = useState(false);
+	const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+	const [deletePassword, setDeletePassword] = useState("");
+	const [isDeleting, setIsDeleting] = useState(false);
+	const [deleteError, setDeleteError] = useState<string | null>(null);
 
 	const { getFieldProps, submitForm, isSubmitting, serverError, reset } = useForm({
 		schema: updateProfileSchema,
@@ -46,6 +68,74 @@ export default function ProfileScreen() {
 		await logout();
 		router.replace(ROUTES.LOGIN);
 	}, [logout]);
+
+	// ── NFR-11: Export ───────────────────────────────────────────────────────
+
+	const handleExport = useCallback(async () => {
+		setIsExporting(true);
+		try {
+			const result = await userService.exportData();
+			if (!result.success) throw new Error(result.error ?? "Export failed");
+			await Share.share({ message: JSON.stringify(result.data, null, 2) });
+		} catch {
+			Alert.alert("Lỗi", "Không thể xuất dữ liệu. Vui lòng thử lại.");
+		} finally {
+			setIsExporting(false);
+		}
+	}, []);
+
+	// ── NFR-11: Import ───────────────────────────────────────────────────────
+
+	const handleImport = useCallback(async () => {
+		const pickerResult = await DocumentPicker.getDocumentAsync({
+			type: "application/json",
+			copyToCacheDirectory: true,
+		});
+		if (pickerResult.canceled) return;
+		setIsImporting(true);
+		try {
+			const content = await FileSystem.readAsStringAsync(pickerResult.assets[0].uri);
+			const data = JSON.parse(content) as ImportData;
+			const result = await userService.importData(data);
+			if (!result.success) throw new Error(result.error ?? "Import failed");
+			Alert.alert(
+				"Nhập thành công",
+				`Đã nhập ${result.data.importedEntries} nhật ký. Bỏ qua ${result.data.skippedEntries} mục trùng.`,
+			);
+		} catch {
+			Alert.alert("Lỗi", "Không thể nhập dữ liệu. Kiểm tra lại định dạng file.");
+		} finally {
+			setIsImporting(false);
+		}
+	}, []);
+
+	// ── NFR-11: Delete account ───────────────────────────────────────────────
+
+	const closeDeleteModal = useCallback(() => {
+		setIsDeleteModalVisible(false);
+		setDeletePassword("");
+		setDeleteError(null);
+	}, []);
+
+	const handleDeleteAccount = useCallback(async () => {
+		if (!deletePassword.trim()) {
+			setDeleteError("Vui lòng nhập mật khẩu.");
+			return;
+		}
+		setIsDeleting(true);
+		setDeleteError(null);
+		try {
+			const result = await userService.deleteAccount({ password: deletePassword });
+			if (!result.success) throw new ApiError(result.error, result.status ?? 400, result.code);
+			await logout();
+			router.replace(ROUTES.LOGIN);
+		} catch (err) {
+			const { message } = parseError(err);
+			setDeleteError(message);
+		} finally {
+			setIsDeleting(false);
+		}
+	}, [deletePassword, logout]);
 
 	if (!user) return null;
 
@@ -174,11 +264,96 @@ export default function ProfileScreen() {
 					</Pressable>
 				</View>
 
+				{/* Data portability (NFR-11) */}
+				<View style={styles.card}>
+					<Text style={styles.sectionTitle}>Dữ liệu</Text>
+					<Pressable
+						style={styles.menuRow}
+						onPress={() => void handleExport()}
+						disabled={isExporting}
+						accessibilityLabel="Xuất dữ liệu"
+						accessibilityRole="button">
+						<View style={styles.menuRowLeft}>
+							<Ionicons name="cloud-download-outline" size={s(20)} color={colors.iconDefault} />
+							<Text style={styles.menuLabel}>Xuất dữ liệu</Text>
+						</View>
+						{isExporting ? (
+							<ActivityIndicator size="small" color={colors.text.muted} />
+						) : (
+							<Ionicons name="chevron-forward" size={s(16)} color={colors.text.muted} />
+						)}
+					</Pressable>
+					<Divider />
+					<Pressable
+						style={styles.menuRow}
+						onPress={() => void handleImport()}
+						disabled={isImporting}
+						accessibilityLabel="Nhập dữ liệu"
+						accessibilityRole="button">
+						<View style={styles.menuRowLeft}>
+							<Ionicons name="cloud-upload-outline" size={s(20)} color={colors.iconDefault} />
+							<Text style={styles.menuLabel}>Nhập dữ liệu</Text>
+						</View>
+						{isImporting ? (
+							<ActivityIndicator size="small" color={colors.text.muted} />
+						) : (
+							<Ionicons name="chevron-forward" size={s(16)} color={colors.text.muted} />
+						)}
+					</Pressable>
+				</View>
+
+				{/* Delete account (NFR-11) */}
+				<View style={styles.card}>
+					<Button
+						title="Xoá tài khoản"
+						variant="danger"
+						fullWidth
+						onPress={() => setIsDeleteModalVisible(true)}
+					/>
+				</View>
+
 				{/* Logout */}
 				<View style={styles.card}>
 					<Button title="Đăng xuất" variant="danger" fullWidth onPress={handleLogout} />
 				</View>
 			</ScrollView>
+
+			{/* Delete account confirmation modal */}
+			<Modal
+				visible={isDeleteModalVisible}
+				transparent
+				animationType="fade"
+				onRequestClose={closeDeleteModal}>
+				<Pressable style={styles.modalOverlay} onPress={closeDeleteModal}>
+					<Pressable style={styles.modalCard} onPress={() => {}}>
+						<Text style={styles.modalTitle}>Xoá tài khoản</Text>
+						<Text style={styles.modalBody}>
+							Thao tác này không thể hoàn tác. Tất cả nhật ký và dữ liệu của bạn sẽ bị xoá vĩnh
+							viễn.
+						</Text>
+						<Input
+							label="Mật khẩu xác nhận"
+							placeholder="Nhập mật khẩu"
+							secureTextEntry
+							value={deletePassword}
+							onChangeText={(t) => {
+								setDeletePassword(t);
+								setDeleteError(null);
+							}}
+							error={deleteError ?? undefined}
+						/>
+						<View style={styles.modalActions}>
+							<Button title="Huỷ" variant="ghost" onPress={closeDeleteModal} />
+							<Button
+								title="Xoá tài khoản"
+								variant="danger"
+								loading={isDeleting}
+								onPress={() => void handleDeleteAccount()}
+							/>
+						</View>
+					</Pressable>
+				</Pressable>
+			</Modal>
 		</ScreenWrapper>
 	);
 }
@@ -272,6 +447,40 @@ function createStyles(colors: ThemeColors) {
 			lineHeight: LINE_HEIGHT.tight,
 			color: colors.text.inverse,
 			fontWeight: "700",
+		},
+		sectionTitle: {
+			fontSize: FONT_SIZE[13],
+			fontWeight: "600",
+			color: colors.text.secondary,
+		},
+		modalOverlay: {
+			flex: 1,
+			backgroundColor: colors.background.overlay,
+			justifyContent: "center",
+			alignItems: "center",
+			paddingHorizontal: SPACING[24],
+		},
+		modalCard: {
+			backgroundColor: colors.background.card,
+			borderRadius: RADIUS.lg,
+			padding: SPACING[24],
+			gap: SPACING[16],
+			width: "100%",
+		},
+		modalTitle: {
+			fontSize: FONT_SIZE[17],
+			fontWeight: "700",
+			color: colors.text.primary,
+		},
+		modalBody: {
+			fontSize: FONT_SIZE[14],
+			color: colors.text.secondary,
+			lineHeight: LINE_HEIGHT.relaxed,
+		},
+		modalActions: {
+			flexDirection: "row",
+			justifyContent: "flex-end",
+			gap: SPACING[8],
 		},
 	});
 }

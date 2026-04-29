@@ -41,7 +41,8 @@ export default function CreateEntryScreen() {
 	const editorRef = useRef<RichTextEditorRef>(null);
 
 	// Available tags from store (fetched once on app mount)
-	const availableTags = useMoodTagsStore((s) => s.tags);
+	const moodTags = useMoodTagsStore((s) => s.moodTags);
+	const lifeTags = useMoodTagsStore((s) => s.lifeTags);
 
 	const { watch, setValue, formState } = useForm({
 		schema: createEntryFormSchema,
@@ -170,42 +171,82 @@ export default function CreateEntryScreen() {
 						onBlur={() => void triggerImmediately()}
 					/>
 
-					{/* Tags (FR-08) — chip picker from admin-managed catalog */}
-					{availableTags.length > 0 && (
+					{/* Tags (FR-08) — chip picker grouped by MOOD / LIFE */}
+					{(moodTags.length > 0 || lifeTags.length > 0) && (
 						<View style={styles.tagsSection}>
 							<Text style={styles.tagsLabel}>
 								Thẻ{currentTagIds.length > 0 ? ` (${currentTagIds.length}/10)` : ""}
 							</Text>
-							<View style={styles.tagsGrid}>
-								{availableTags.map((tag) => {
-									const selected = currentTagIds.includes(tag.id);
-									const disabled = !selected && currentTagIds.length >= 10;
-									return (
-										<Pressable
-											key={tag.id}
-											onPress={() => toggleTag(tag.id)}
-											disabled={disabled}
-											accessibilityRole="button"
-											accessibilityLabel={`${selected ? "Bỏ chọn" : "Chọn"} thẻ ${tag.name}`}
-											style={[
-												styles.tagChip,
-												selected
-													? { backgroundColor: colors.brand.primary, borderColor: colors.brand.primary }
-													: { backgroundColor: colors.background.card, borderColor: colors.border.default },
-												disabled && styles.tagChipDisabled,
-											]}>
-											<Text
-												style={[
-													styles.tagChipText,
-													{ color: selected ? colors.text.inverse : colors.text.secondary },
-													disabled && { color: colors.interactive.disabled },
-												]}>
-												#{tag.name}
-											</Text>
-										</Pressable>
-									);
-								})}
-							</View>
+							{moodTags.length > 0 && (
+								<>
+									<Text style={styles.tagGroupLabel}>Cảm xúc</Text>
+									<View style={styles.tagsGrid}>
+										{moodTags.map((tag) => {
+											const selected = currentTagIds.includes(tag.id);
+											const disabled = !selected && currentTagIds.length >= 10;
+											return (
+												<Pressable
+													key={tag.id}
+													onPress={() => toggleTag(tag.id)}
+													disabled={disabled}
+													accessibilityRole="button"
+													accessibilityLabel={`${selected ? "Bỏ chọn" : "Chọn"} thẻ ${tag.name}`}
+													style={[
+														styles.tagChip,
+														selected
+															? { backgroundColor: colors.brand.primary, borderColor: colors.brand.primary }
+															: { backgroundColor: colors.background.card, borderColor: colors.border.default },
+														disabled && styles.tagChipDisabled,
+													]}>
+													<Text
+														style={[
+															styles.tagChipText,
+															{ color: selected ? colors.text.inverse : colors.text.secondary },
+															disabled && { color: colors.interactive.disabled },
+														]}>
+														#{tag.name}
+													</Text>
+												</Pressable>
+											);
+										})}
+									</View>
+								</>
+							)}
+							{lifeTags.length > 0 && (
+								<>
+									<Text style={styles.tagGroupLabel}>Cuộc sống</Text>
+									<View style={styles.tagsGrid}>
+										{lifeTags.map((tag) => {
+											const selected = currentTagIds.includes(tag.id);
+											const disabled = !selected && currentTagIds.length >= 10;
+											return (
+												<Pressable
+													key={tag.id}
+													onPress={() => toggleTag(tag.id)}
+													disabled={disabled}
+													accessibilityRole="button"
+													accessibilityLabel={`${selected ? "Bỏ chọn" : "Chọn"} thẻ ${tag.name}`}
+													style={[
+														styles.tagChip,
+														selected
+															? { backgroundColor: colors.brand.primary, borderColor: colors.brand.primary }
+															: { backgroundColor: colors.background.card, borderColor: colors.border.default },
+														disabled && styles.tagChipDisabled,
+													]}>
+													<Text
+														style={[
+															styles.tagChipText,
+															{ color: selected ? colors.text.inverse : colors.text.secondary },
+															disabled && { color: colors.interactive.disabled },
+														]}>
+														#{tag.name}
+													</Text>
+												</Pressable>
+											);
+										})}
+									</View>
+								</>
+							)}
 						</View>
 					)}
 				</ScrollView>
@@ -264,6 +305,13 @@ function createStyles(colors: ThemeColors) {
 		},
 		tagChipText: {
 			fontSize: FONT_SIZE[13],
+		},
+		tagGroupLabel: {
+			fontSize: FONT_SIZE[12],
+			fontWeight: "500",
+			color: colors.text.muted,
+			marginTop: SPACING[8],
+			marginBottom: SPACING[4],
 		},
 	});
 }
